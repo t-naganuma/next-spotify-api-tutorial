@@ -2,7 +2,10 @@ import axios from 'axios'
 import React from 'react';
 
 export default function index() {
+  // APIで取得したアーティストをstateに格納するため
   const [artists, setArtists] = React.useState([]);
+
+  // アクセストークンを取得し、ローカルストレージに保存する
   const auth = () => {
     const endpoint = 'http://localhost:3000/api/spotify/auth';
     axios.get(endpoint)
@@ -11,6 +14,7 @@ export default function index() {
       });
   }
 
+  // APIを叩いて結果をstateに格納する
   const getArtists = () => {
     const accessToken = localStorage.getItem('accessToken');
     if (! accessToken) {
@@ -19,22 +23,19 @@ export default function index() {
     }
 
     const endpoint = 'https://api.spotify.com/v1/artists';
-    axios.get(endpoint, {
-      params: {
-        ids: '0oSGxfWSnnOXhD2fKuz2Gy,3dBVyJ7JuOMt4GE9607Qin',
-      },
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-      }
-    }).then(res => {
-      setArtists(res.data.artists);
-    });
+    const params = {ids: '0oSGxfWSnnOXhD2fKuz2Gy,3dBVyJ7JuOMt4GE9607Qin'};
+    const headers = {'Authorization': `Bearer ${accessToken}`,};
+    axios.get(endpoint, {params,headers})
+      .then(res => {
+        setArtists(res.data.artists);
+      });
   }
 
   return (
     <>
       <button onClick={auth}>auth</button>
       <button onClick={getArtists}>get artists</button>
+      {/* stateに格納されたアーティストを表示する */}
       {artists.map((artist) => {
         return <p key={artist.id}>{artist.name}</p>
       })}
