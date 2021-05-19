@@ -1,12 +1,15 @@
 SpotifyのAPIを叩くサンプル
+
 env.localにCLIENT_IDとCLIENT_SECRETを設定してください。
 
 以下コマンドを実行した後、 http://localhost:3000 にアクセスしてください。
 ```
+$ npm install
 $ npm run dev
 ```
 
 `auth`をクリックするとアクセストークンを取得します。
+
 `get artists`をクリックするとアーティスト取得のAPIを叩き、アーティスト名を表示します。
 
 以下Next.jsのReadme
