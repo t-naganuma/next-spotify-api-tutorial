@@ -1,17 +1,43 @@
-SpotifyのAPIを叩くサンプル
+# SpotifyのAPIを叩くサンプル
 
-env.localにCLIENT_IDとCLIENT_SECRETを設定してください。
+## リポジトリをクローン
+任意のディレクトリで下記のコマンドを実行
+```
+$ git clone https://github.com/X-HACK/next-spotify-api-tutorial.git
+$ cd next-spotify-api-tutorial
+```
 
-以下コマンドを実行した後、 http://localhost:3000 にアクセスしてください。
+## 環境変数を設定
+### ファイル作成
+```
+# env.localファイルを作成
+$ cp .env.local.example .env.local
+```
+### spotifyのAPI KEYをセット
+API の取得は[https://developer.spotify.com/](https://developer.spotify.com/)
+env.localに`CLIENT_ID`と`CLIENT_SECRET`を設定してください。
+
+## パッケージ追加
+npm or yarn で パッケージを追加してください。
 ```
 $ npm install
-$ npm run dev
+# or
+$ yarn
 ```
 
-`auth`をクリックするとアクセストークンを取得します。
+# 起動
+以下コマンドを実行した後、 http://localhost:3000 にアクセスしてください。
+```
+$ npm run dev
+# or
+$ yarn
+```
 
+# 使い方
+`auth`をクリックするとアクセストークンを取得します。
 `get artists`をクリックするとアーティスト取得のAPIを叩き、アーティスト名を表示します。
 
+# More info
 以下Next.jsのReadme
 
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
