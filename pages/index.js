@@ -21,10 +21,9 @@ export default function index() {
 
   const refreshAccessToken = async () => {
     const endpoint = 'http://localhost:3000/api/spotify/refreshAccessToken';
-    const params = {code: (new URL(window.location.href)).searchParams.get('code')};
-    const response = await axios.get(endpoint, {params}).then(res => res.data.data);
-    localStorage.setItem('accessToken', response.access_token);
-    localStorage.setItem('accessToken', response.access_token);
+    const params = {refresh_token: localStorage.getItem('refreshToken')};
+    const response = await axios.get(endpoint, {params}).then(res => res.data);
+    localStorage.setItem('accessToken', response.accessToken);
   }
 
   // APIを叩いて結果をstateに格納する
