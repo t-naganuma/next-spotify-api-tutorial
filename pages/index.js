@@ -14,6 +14,14 @@ export default function index() {
       });
   }
 
+  const getAccessToken = async () => {
+    const endpoint = 'http://localhost:3000/api/spotify/getAccessToken';
+    const params = {code: (new URL(window.location.href)).searchParams.get('code')};
+    const response = await axios.get(endpoint, {params}).then(res => res.data.data);
+    localStorage.setItem('accessToken', response.access_token);
+    localStorage.setItem('refreshToken', response.refresh_token);
+  }
+
   // APIを叩いて結果をstateに格納する
   const getArtists = () => {
     const accessToken = localStorage.getItem('accessToken');
@@ -34,11 +42,7 @@ export default function index() {
   return (
     <>
       <button onClick={auth}>auth</button>
-      <button onClick={getArtists}>get artists</button>
-      {/* stateに格納されたアーティストを表示する */}
-      {artists.map((artist) => {
-        return <p key={artist.id}>{artist.name}</p>
-      })}
+      <button onClick={getAccessToken}>get access token</button>
     </>
   )
 }
