@@ -10,7 +10,7 @@ export default function index() {
     const endpoint = 'http://localhost:3000/api/spotify/auth';
     axios.get(endpoint)
       .then(res => {
-        localStorage.setItem('accessToken', res.data.access_token);
+        window.location.href = 'https://accounts.spotify.com' + res.data.redirect_url;
       });
   }
 
