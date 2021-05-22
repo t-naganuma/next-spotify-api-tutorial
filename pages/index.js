@@ -2,10 +2,7 @@ import axios from 'axios'
 import React from 'react';
 
 export default function index() {
-  // APIで取得したアーティストをstateに格納するため
-  const [artists, setArtists] = React.useState([]);
-
-  // アクセストークンを取得し、ローカルストレージに保存する
+  const [yourName, setYourName] = React.useState('');
   const auth = () => {
     const endpoint = 'http://localhost:3000/api/spotify/auth';
     axios.get(endpoint)
@@ -23,19 +20,18 @@ export default function index() {
   }
 
   // APIを叩いて結果をstateに格納する
-  const getArtists = () => {
+  const getProfile = () => {
     const accessToken = localStorage.getItem('accessToken');
     if (! accessToken) {
       alert('アクセストークンが無効です');
       return;
     }
 
-    const endpoint = 'https://api.spotify.com/v1/artists';
-    const params = {ids: '0oSGxfWSnnOXhD2fKuz2Gy,3dBVyJ7JuOMt4GE9607Qin'};
+    const endpoint = 'https://api.spotify.com/v1/me';
     const headers = {'Authorization': `Bearer ${accessToken}`,};
-    axios.get(endpoint, {params,headers})
+    axios.get(endpoint, {headers})
       .then(res => {
-        setArtists(res.data.artists);
+        setYourName(res.data.display_name);
       });
   }
 
@@ -43,6 +39,8 @@ export default function index() {
     <>
       <button onClick={auth}>auth</button>
       <button onClick={getAccessToken}>get access token</button>
+      <button onClick={getProfile}>get profile</button>
+      {yourName ? <p>あなたの名前は {yourName} ですね！</p> : <></>}
     </>
   )
 }
