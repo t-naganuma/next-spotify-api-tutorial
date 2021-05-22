@@ -12,6 +12,11 @@ export default function index() {
   }
 
   const getAccessToken = async () => {
+    if (localStorage.getItem('accessToken')) {
+      alert('すでにアクセストークンを取得しています。\n新たなトークンを取得するには、\nauthボタン もしくは refresh access token ボタンを押してください。');
+      return;
+    }
+
     const endpoint = 'http://localhost:3000/api/spotify/getAccessToken';
     const params = {code: (new URL(window.location.href)).searchParams.get('code')};
     const response = await axios.get(endpoint, {params}).then(res => res.data.data);
@@ -20,17 +25,26 @@ export default function index() {
   }
 
   const refreshAccessToken = async () => {
+    if (! localStorage.getItem('refreshToken')) {
+      alert('リフレッシュトークンがありません。\nauthボタンを押して認証し直してください。');
+      return;
+    }
+
     const endpoint = 'http://localhost:3000/api/spotify/refreshAccessToken';
     const params = {refresh_token: localStorage.getItem('refreshToken')};
     const response = await axios.get(endpoint, {params}).then(res => res.data);
     localStorage.setItem('accessToken', response.accessToken);
+    if (localStorage.getItem('accessToken')) {
+      alert('アクセストークンを更新しました。');
+      return;
+    }
   }
 
   // APIを叩いて結果をstateに格納する
   const getProfile = () => {
     const accessToken = localStorage.getItem('accessToken');
     if (! accessToken) {
-      alert('アクセストークンが無効です');
+      alert('アクセストークンが取得できていません。\nauthボタンを押して認証し直してください。');
       return;
     }
 
@@ -39,6 +53,9 @@ export default function index() {
     axios.get(endpoint, {headers})
       .then(res => {
         setYourName(res.data.display_name);
+      }).catch(error => {
+        // エラーは401と決めうち
+        alert('アクセストークンが無効です。\nauthボタンを押して認証し直すか、refresh access tokenボタンを押してトークンを更新してください。')
       });
   }
 
