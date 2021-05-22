@@ -19,6 +19,14 @@ export default function index() {
     localStorage.setItem('refreshToken', response.refresh_token);
   }
 
+  const refreshAccessToken = async () => {
+    const endpoint = 'http://localhost:3000/api/spotify/refreshAccessToken';
+    const params = {code: (new URL(window.location.href)).searchParams.get('code')};
+    const response = await axios.get(endpoint, {params}).then(res => res.data.data);
+    localStorage.setItem('accessToken', response.access_token);
+    localStorage.setItem('accessToken', response.access_token);
+  }
+
   // APIを叩いて結果をstateに格納する
   const getProfile = () => {
     const accessToken = localStorage.getItem('accessToken');
@@ -39,6 +47,7 @@ export default function index() {
     <>
       <button onClick={auth}>auth</button>
       <button onClick={getAccessToken}>get access token</button>
+      <button onClick={refreshAccessToken}>refresh access token</button>
       <button onClick={getProfile}>get profile</button>
       {yourName ? <p>あなたの名前は {yourName} ですね！</p> : <></>}
     </>
