@@ -2,43 +2,70 @@ import axios from 'axios'
 import React from 'react';
 
 export default function index() {
-  // APIで取得したアーティストをstateに格納するため
-  const [artists, setArtists] = React.useState([]);
-
-  // アクセストークンを取得し、ローカルストレージに保存する
+  const [yourName, setYourName] = React.useState('');
   const auth = () => {
     const endpoint = 'http://localhost:3000/api/spotify/auth';
     axios.get(endpoint)
       .then(res => {
-        localStorage.setItem('accessToken', res.data.access_token);
+        window.location.href = 'https://accounts.spotify.com' + res.data.redirect_url;
       });
   }
 
-  // APIを叩いて結果をstateに格納する
-  const getArtists = () => {
-    const accessToken = localStorage.getItem('accessToken');
-    if (! accessToken) {
-      alert('アクセストークンが無効です');
+  const getAccessToken = async () => {
+    if (localStorage.getItem('accessToken')) {
+      alert('すでにアクセストークンを取得しています。\n新たなトークンを取得するには、\nauthボタン もしくは refresh access token ボタンを押してください。');
       return;
     }
 
-    const endpoint = 'https://api.spotify.com/v1/artists';
-    const params = {ids: '0oSGxfWSnnOXhD2fKuz2Gy,3dBVyJ7JuOMt4GE9607Qin'};
+    const endpoint = 'http://localhost:3000/api/spotify/getAccessToken';
+    const params = {code: (new URL(window.location.href)).searchParams.get('code')};
+    const response = await axios.get(endpoint, {params}).then(res => res.data.data);
+    localStorage.setItem('accessToken', response.access_token);
+    localStorage.setItem('refreshToken', response.refresh_token);
+  }
+
+  const refreshAccessToken = async () => {
+    if (! localStorage.getItem('refreshToken')) {
+      alert('リフレッシュトークンがありません。\nauthボタンを押して認証し直してください。');
+      return;
+    }
+
+    const endpoint = 'http://localhost:3000/api/spotify/refreshAccessToken';
+    const params = {refresh_token: localStorage.getItem('refreshToken')};
+    const response = await axios.get(endpoint, {params}).then(res => res.data);
+    localStorage.setItem('accessToken', response.accessToken);
+    if (localStorage.getItem('accessToken')) {
+      alert('アクセストークンを更新しました。');
+      return;
+    }
+  }
+
+  // APIを叩いて結果をstateに格納する
+  const getProfile = () => {
+    const accessToken = localStorage.getItem('accessToken');
+    if (! accessToken) {
+      alert('アクセストークンが取得できていません。\nauthボタンを押して認証し直してください。');
+      return;
+    }
+
+    const endpoint = 'https://api.spotify.com/v1/me';
     const headers = {'Authorization': `Bearer ${accessToken}`,};
-    axios.get(endpoint, {params,headers})
+    axios.get(endpoint, {headers})
       .then(res => {
-        setArtists(res.data.artists);
+        setYourName(res.data.display_name);
+      }).catch(error => {
+        // エラーは401と決めうち
+        alert('アクセストークンが無効です。\nauthボタンを押して認証し直すか、refresh access tokenボタンを押してトークンを更新してください。')
       });
   }
 
   return (
     <>
       <button onClick={auth}>auth</button>
-      <button onClick={getArtists}>get artists</button>
-      {/* stateに格納されたアーティストを表示する */}
-      {artists.map((artist) => {
-        return <p key={artist.id}>{artist.name}</p>
-      })}
+      <button onClick={getAccessToken}>get access token</button>
+      <button onClick={refreshAccessToken}>refresh access token</button>
+      <button onClick={getProfile}>get profile</button>
+      {yourName ? <p>あなたの名前は {yourName} ですね！</p> : <></>}
     </>
   )
 }
