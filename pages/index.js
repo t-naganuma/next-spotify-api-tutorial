@@ -1,28 +1,45 @@
 import axios from 'axios'
-import React from 'react';
+import React,{useEffect} from 'react';
 
 export default function index() {
   const [yourName, setYourName] = React.useState('');
-  const auth = () => {
+  const token = [];
+
+  useEffect(() => {
+    const getAccessToken = async () => {
+      const params = {code: (new URL(window.location.href)).searchParams.get('code')};
+      if (params.code) {
+        const endpoint = 'http://localhost:3000/api/spotify/getAccessToken';
+        const response = await axios.get(endpoint, {params}).then(res => res.data.data);
+        localStorage.setItem('accessToken', response.access_token);
+        localStorage.setItem('refreshToken', response.refresh_token);
+        window.location.href = '/';
+      }
+    }
+    getAccessToken();
+
+  }, [token])
+
+  const auth = async () => {
     const endpoint = 'http://localhost:3000/api/spotify/auth';
     axios.get(endpoint)
-      .then(res => {
+    .then(res => {
         window.location.href = 'https://accounts.spotify.com' + res.data.redirect_url;
       });
   }
 
-  const getAccessToken = async () => {
-    if (localStorage.getItem('accessToken')) {
-      alert('すでにアクセストークンを取得しています。\n新たなトークンを取得するには、\nauthボタン もしくは refresh access token ボタンを押してください。');
-      return;
-    }
+  // const getAccessToken = async () => {
+  //   if (localStorage.getItem('accessToken')) {
+  //     alert('すでにアクセストークンを取得しています。\n新たなトークンを取得するには、\nauthボタン もしくは refresh access token ボタンを押してください。');
+  //     return;
+  //   }
 
-    const endpoint = 'http://localhost:3000/api/spotify/getAccessToken';
-    const params = {code: (new URL(window.location.href)).searchParams.get('code')};
-    const response = await axios.get(endpoint, {params}).then(res => res.data.data);
-    localStorage.setItem('accessToken', response.access_token);
-    localStorage.setItem('refreshToken', response.refresh_token);
-  }
+  //   const endpoint = 'http://localhost:3000/api/spotify/getAccessToken';
+  //   const params = {code: (new URL(window.location.href)).searchParams.get('code')};
+  //   const response = await axios.get(endpoint, {params}).then(res => res.data.data);
+  //   localStorage.setItem('accessToken', response.access_token);
+  //   localStorage.setItem('refreshToken', response.refresh_token);
+  // }
 
   const refreshAccessToken = async () => {
     if (! localStorage.getItem('refreshToken')) {
@@ -62,7 +79,7 @@ export default function index() {
   return (
     <>
       <button onClick={auth}>auth</button>
-      <button onClick={getAccessToken}>get access token</button>
+      {/* <button onClick={getAccessToken}>get access token</button> */}
       <button onClick={refreshAccessToken}>refresh access token</button>
       <button onClick={getProfile}>get profile</button>
       {yourName ? <p>あなたの名前は {yourName} ですね！</p> : <></>}
