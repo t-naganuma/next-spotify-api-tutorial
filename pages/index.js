@@ -7,39 +7,40 @@ export default function index() {
 
   useEffect(() => {
     const getAccessToken = async () => {
+      const endpoint = 'http://localhost:3000/api/spotify/getAccessToken';
       const params = {code: (new URL(window.location.href)).searchParams.get('code')};
+      console.log(params)
       if (params.code) {
-        const endpoint = 'http://localhost:3000/api/spotify/getAccessToken';
         const response = await axios.get(endpoint, {params}).then(res => res.data.data);
-        localStorage.setItem('accessToken', response.access_token);
-        localStorage.setItem('refreshToken', response.refresh_token);
-        window.location.href = '/';
+        // localStorage.setItem('accessToken', response.access_token);
+        // localStorage.setItem('refreshToken', response.refresh_token);
       }
     }
     getAccessToken();
+  })
 
-  }, [token])
-
-  const auth = async () => {
+  const auth = () => {
     const endpoint = 'http://localhost:3000/api/spotify/auth';
     axios.get(endpoint)
-    .then(res => {
+      .then(res => {
         window.location.href = 'https://accounts.spotify.com' + res.data.redirect_url;
       });
   }
 
   // const getAccessToken = async () => {
-  //   if (localStorage.getItem('accessToken')) {
-  //     alert('すでにアクセストークンを取得しています。\n新たなトークンを取得するには、\nauthボタン もしくは refresh access token ボタンを押してください。');
-  //     return;
-  //   }
-
+  //   // if (localStorage.getItem('accessToken')) {
+  //   //   alert('すでにアクセストークンを取得しています。\n新たなトークンを取得するには、\nauthボタン もしくは refresh access token ボタンを押してください。');
+  //   //   return;
+  //   // }
   //   const endpoint = 'http://localhost:3000/api/spotify/getAccessToken';
   //   const params = {code: (new URL(window.location.href)).searchParams.get('code')};
-  //   const response = await axios.get(endpoint, {params}).then(res => res.data.data);
-  //   localStorage.setItem('accessToken', response.access_token);
-  //   localStorage.setItem('refreshToken', response.refresh_token);
+  //   if (params.code) {
+  //     const response = await axios.get(endpoint, {params}).then(res => res.data.data);
+  //     localStorage.setItem('accessToken', response.access_token);
+  //     localStorage.setItem('refreshToken', response.refresh_token);
+  //   }
   // }
+  
 
   const refreshAccessToken = async () => {
     if (! localStorage.getItem('refreshToken')) {
@@ -75,6 +76,8 @@ export default function index() {
         alert('アクセストークンが無効です。\nauthボタンを押して認証し直すか、refresh access tokenボタンを押してトークンを更新してください。')
       });
   }
+
+  // getAccessToken();
 
   return (
     <>
