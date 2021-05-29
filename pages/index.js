@@ -3,21 +3,23 @@ import React,{useEffect} from 'react';
 
 export default function index() {
   const [yourName, setYourName] = React.useState('');
-  const token = [];
 
   useEffect(() => {
     const getAccessToken = async () => {
       const endpoint = 'http://localhost:3000/api/spotify/getAccessToken';
       const params = {code: (new URL(window.location.href)).searchParams.get('code')};
-      console.log(params)
       if (params.code) {
         const response = await axios.get(endpoint, {params}).then(res => res.data.data);
-        // localStorage.setItem('accessToken', response.access_token);
-        // localStorage.setItem('refreshToken', response.refresh_token);
+        localStorage.setItem('accessToken', response.access_token);
+        localStorage.setItem('refreshToken', response.refresh_token);
+        const url = new URL(window.location.href);
+        url.searchParams.delete('code');
+        url.searchParams.delete('state');
+        history.pushState({}, '', url);
       }
     }
     getAccessToken();
-  })
+  }, [])
 
   const auth = () => {
     const endpoint = 'http://localhost:3000/api/spotify/auth';
