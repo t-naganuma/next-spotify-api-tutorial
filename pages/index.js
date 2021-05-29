@@ -1,8 +1,8 @@
 import axios from 'axios';
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function index() {
-  const [yourName, setYourName] = React.useState('');
+  const [artists, setArtists] = useState([]);
 
   useEffect(() => {
     const getAccessToken = async () => {
@@ -54,7 +54,7 @@ export default function index() {
   };
 
   // APIを叩いて結果をstateに格納する
-  const getProfile = () => {
+  const getArtist = () => {
     const accessToken = localStorage.getItem('accessToken');
     if (!accessToken) {
       alert(
@@ -63,14 +63,16 @@ export default function index() {
       return;
     }
 
-    const endpoint = 'https://api.spotify.com/v1/me';
+    const endpoint = 'https://api.spotify.com/v1/me/top/artists';
     const headers = { Authorization: `Bearer ${accessToken}` };
     axios
       .get(endpoint, { headers })
       .then((res) => {
-        setYourName(res.data.display_name);
+        console.log(res.data.items);
+        setArtists(res.data.items);
       })
       .catch((error) => {
+        console.log(error);
         // エラーは401と決めうち
         alert(
           'アクセストークンが無効です。\nauthボタンを押して認証し直すか、refresh access tokenボタンを押してトークンを更新してください。'
@@ -78,12 +80,23 @@ export default function index() {
       });
   };
 
+  const displayArtists = () => {
+    return artists.map((artist) => {
+      return (
+        <div>
+          <p key={artist.id}>{artist.name}</p>
+          <img src={artist.images[0].url} alt="" />
+        </div>
+      );
+    });
+  };
+
   return (
     <>
       <button onClick={auth}>auth</button>
       <button onClick={refreshAccessToken}>refresh access token</button>
-      <button onClick={getProfile}>get profile</button>
-      {yourName ? <p>あなたの名前は {yourName} ですね！</p> : <></>}
+      <button onClick={getArtist}>get artist</button>
+      {displayArtists()}
     </>
   );
 }
