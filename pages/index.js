@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 
 export default function index() {
   const [artists, setArtists] = useState([]);
+  const [tracks, setTracks] = useState([]);
 
   useEffect(() => {
     const getAccessToken = async () => {
@@ -80,23 +81,61 @@ export default function index() {
       });
   };
 
-  const displayArtists = () => {
-    return artists.map((artist) => {
+  const displayArtists = (artists.map((artist) => {
       return (
-        <div>
-          <p key={artist.id}>{artist.name}</p>
+        <li key={artist.id}>
+          {artist.name}
           <img src={artist.images[0].url} alt="" />
-        </div>
+        </li>
       );
-    });
+    })
+  );
+
+  // APIを叩いて結果をstateに格納する
+  const getTracks = () => {
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) {
+      alert(
+        'アクセストークンが取得できていません。\nauthボタンを押して認証し直してください。'
+      );
+      return;
+    }
+
+    const endpoint = 'https://api.spotify.com/v1/me/top/tracks';
+    const headers = { Authorization: `Bearer ${accessToken}` };
+    axios
+      .get(endpoint, { headers })
+      .then((res) => {
+        console.log(res.data.items);
+        setTracks(res.data.items);
+      })
+      .catch((error) => {
+        console.log(error);
+        // エラーは401と決めうち
+        alert(
+          'アクセストークンが無効です。\nauthボタンを押して認証し直すか、refresh access tokenボタンを押してトークンを更新してください。'
+        );
+      });
   };
+
+  const displayTracks = (tracks.map((track) => {
+      return (
+        <li key={track.id}>
+          {track.name}
+          <img src={track.album.images[0].url} alt="" />
+        </li>
+      );
+    })
+  );
 
   return (
     <>
       <button onClick={auth}>auth</button>
       <button onClick={refreshAccessToken}>refresh access token</button>
       <button onClick={getArtist}>get artist</button>
-      {displayArtists()}
+      <button onClick={getTracks}>get tracks</button>
+      <ul>{displayArtists}</ul>
+      <ul>{displayTracks}</ul>
     </>
   );
 }
