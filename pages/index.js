@@ -1,5 +1,6 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
+import Button from "@material-ui/core/Button";
 
 export default function index() {
   const [artists, setArtists] = useState([]);
@@ -130,10 +131,10 @@ export default function index() {
 
   return (
     <>
-      <button onClick={auth}>auth</button>
-      <button onClick={refreshAccessToken}>refresh access token</button>
-      <button onClick={getArtist}>get artist</button>
-      <button onClick={getTracks}>get tracks</button>
+      <Button variant="contained" color="primary" onClick={auth}>Sign in with Spotify</Button>
+      <Button variant="contained" color="primary" onClick={refreshAccessToken}>refresh access token</Button>
+      <Button variant="contained" color="primary" onClick={getArtist}>get artist</Button>
+      <Button variant="contained" color="primary" onClick={getTracks}>get tracks</Button>
       <ul>{displayArtists}</ul>
       <ul>{displayTracks}</ul>
     </>
