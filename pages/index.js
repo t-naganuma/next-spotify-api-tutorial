@@ -20,6 +20,9 @@ export default function index() {
           .then((res) => res.data.data);
         localStorage.setItem('accessToken', response.access_token);
         localStorage.setItem('refreshToken', response.refresh_token);
+        let time = new Date();
+        time.setHours(time.getHours() + 1);
+        localStorage.setItem('expiredAt', time);
         const url = new URL(window.location.href);
         url.searchParams.delete('code');
         url.searchParams.delete('state');
@@ -44,7 +47,7 @@ export default function index() {
       );
       return;
     }
-
+    console.log('test');
     const endpoint = 'http://localhost:3000/api/spotify/refreshAccessToken';
     const params = { refresh_token: localStorage.getItem('refreshToken') };
     const response = await axios
@@ -65,6 +68,13 @@ export default function index() {
         'アクセストークンが取得できていません。\nauthボタンを押して認証し直してください。'
       );
       return;
+    }
+
+    // Tokenの有効期限チェック
+    const expiredAt = new Date(localStorage.getItem('expiredAt'));
+    const now = new Date();
+    if (expiredAt.getTime() < now.getTime()) {
+      refreshAccessToken();
     }
 
     const endpoint = 'https://api.spotify.com/v1/me/top/artists';
