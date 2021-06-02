@@ -1,6 +1,5 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
-import Button from "@material-ui/core/Button";
 
 export default function index() {
   const [artists, setArtists] = useState([]);
@@ -82,15 +81,14 @@ export default function index() {
       });
   };
 
-  const displayArtists = (artists.map((artist) => {
-      return (
-        <li key={artist.id}>
-          {artist.name}
-          <img src={artist.images[0].url} alt="" />
-        </li>
-      );
-    })
-  );
+  const displayArtists = artists.map((artist) => {
+    return (
+      <li key={artist.id}>
+        {artist.name}
+        <img src={artist.images[0].url} alt="" />
+      </li>
+    );
+  });
 
   // APIを叩いて結果をstateに格納する
   const getTracks = () => {
@@ -119,22 +117,21 @@ export default function index() {
       });
   };
 
-  const displayTracks = (tracks.map((track) => {
-      return (
-        <li key={track.id}>
-          {track.name}
-          <img src={track.album.images[0].url} alt="" />
-        </li>
-      );
-    })
-  );
+  const displayTracks = tracks.map((track) => {
+    return (
+      <li key={track.id}>
+        {track.name}
+        <img src={track.album.images[0].url} alt="" />
+      </li>
+    );
+  });
 
   return (
     <>
-      <Button variant="contained" color="primary" onClick={auth}>Sign in with Spotify</Button>
-      <Button variant="contained" color="primary" onClick={refreshAccessToken}>refresh access token</Button>
-      <Button variant="contained" color="primary" onClick={getArtist}>get artist</Button>
-      <Button variant="contained" color="primary" onClick={getTracks}>get tracks</Button>
+      <button onClick={auth}>Sign in with Spotify</button>
+      <button onClick={refreshAccessToken}>refresh access token</button>
+      <button onClick={getArtist}>get artist</button>
+      <button onClick={getTracks}>get tracks</button>
       <ul>{displayArtists}</ul>
       <ul>{displayTracks}</ul>
     </>
