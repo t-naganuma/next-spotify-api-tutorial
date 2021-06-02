@@ -1,0 +1,17 @@
+@import '../variables.scss';
+@import '../mixin.scss';
+@import '../function.scss';
+
+.button {
+  border-radius: 25px;
+  box-shadow: 0 4px 14px 0 rgb(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: center;
+  padding: rem(12px) rem(32px);
+}
+.login {
+  background-color: $secondary-color;
+  color: $white;
+  font-size: rem(20px);
+  font-weight: bold;
+}

@@ -1,6 +1,8 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import styles from '../styles/layout/Layout.module.scss';
+import topStyles from '../styles/layout/Top.module.scss';
+import buttonStyles from '../styles/components/Button.module.scss';
 
 export default function index() {
   const [artists, setArtists] = useState([]);
@@ -130,11 +132,25 @@ export default function index() {
   return (
     <div className={styles.container}>
       <main>
-        <section className={styles.sec_top}>
-          <h1>Create Playlists App</h1>
-          <button onClick={auth}>Sign in with Spotify</button>
-          {/* <button onClick={getArtist}>get artist</button>
-          <button onClick={getTracks}>get tracks</button> */}
+        <section className={topStyles.sec_top}>
+          <h1 className={topStyles.heading1}>Create Playlists App</h1>
+          <div className={topStyles.buttonWrap}>
+            <button
+              className={`${buttonStyles.button} ${buttonStyles.login}`}
+              onClick={auth}>
+              Sign in with Spotify
+            </button>
+            <button
+              className={`${buttonStyles.button} ${buttonStyles.login}`}
+              onClick={getArtist}>
+              get artist
+            </button>
+            <button
+              className={`${buttonStyles.button} ${buttonStyles.login}`}
+              onClick={getTracks}>
+              get tracks
+            </button>
+          </div>
           <ul>{displayArtists}</ul>
           <ul>{displayTracks}</ul>
         </section>
