@@ -1,5 +1,6 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
+import styles from '../styles/layout/Layout.module.scss';
 
 export default function index() {
   const [artists, setArtists] = useState([]);
@@ -127,13 +128,17 @@ export default function index() {
   });
 
   return (
-    <>
-      <button onClick={auth}>Sign in with Spotify</button>
-      <button onClick={refreshAccessToken}>refresh access token</button>
-      <button onClick={getArtist}>get artist</button>
-      <button onClick={getTracks}>get tracks</button>
-      <ul>{displayArtists}</ul>
-      <ul>{displayTracks}</ul>
-    </>
+    <div className={styles.container}>
+      <main>
+        <section className={styles.sec_top}>
+          <h1>Create Playlists App</h1>
+          <button onClick={auth}>Sign in with Spotify</button>
+          {/* <button onClick={getArtist}>get artist</button>
+          <button onClick={getTracks}>get tracks</button> */}
+          <ul>{displayArtists}</ul>
+          <ul>{displayTracks}</ul>
+        </section>
+      </main>
+    </div>
   );
 }
