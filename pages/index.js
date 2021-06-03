@@ -18,11 +18,17 @@ export default function index() {
         const response = await axios
           .get(endpoint, { params })
           .then((res) => res.data.data);
+        // localStorageにTokenをセット
         localStorage.setItem('accessToken', response.access_token);
         localStorage.setItem('refreshToken', response.refresh_token);
-        let time = new Date();
-        time.setHours(time.getHours() + 1);
-        localStorage.setItem('expiredAt', time);
+
+        // Tokenの有効期限を時間に直してセット
+        const now = new Date();
+        const expiration = response.expires_in / 60 / 60;
+        now.setHours(now.getHours() + expiration);
+        localStorage.setItem('expiredAt', now);
+
+        // ブラウザURL部分のクエリを削除
         const url = new URL(window.location.href);
         url.searchParams.delete('code');
         url.searchParams.delete('state');
@@ -31,6 +37,15 @@ export default function index() {
     };
     getAccessToken();
   }, []);
+
+  const checkExpiration = () => {
+    // Tokenの有効期限チェック
+    const expiredAt = new Date(localStorage.getItem('expiredAt'));
+    const now = new Date();
+    if (expiredAt.getTime() < now.getTime()) {
+      refreshAccessToken();
+    }
+  };
 
   const auth = () => {
     const endpoint = 'http://localhost:3000/api/spotify/auth';
@@ -47,13 +62,19 @@ export default function index() {
       );
       return;
     }
-    console.log('test');
     const endpoint = 'http://localhost:3000/api/spotify/refreshAccessToken';
     const params = { refresh_token: localStorage.getItem('refreshToken') };
     const response = await axios
       .get(endpoint, { params })
       .then((res) => res.data);
     localStorage.setItem('accessToken', response.accessToken);
+
+    // Tokenの有効期限を時間に直してセット
+    const now = new Date();
+    const expiration = response.expires_in / 60 / 60;
+    now.setHours(now.getHours() + expiration);
+    localStorage.setItem('expiredAt', now);
+
     if (localStorage.getItem('accessToken')) {
       alert('アクセストークンを更新しました。');
       return;
@@ -69,20 +90,14 @@ export default function index() {
       );
       return;
     }
-
-    // Tokenの有効期限チェック
-    const expiredAt = new Date(localStorage.getItem('expiredAt'));
-    const now = new Date();
-    if (expiredAt.getTime() < now.getTime()) {
-      refreshAccessToken();
-    }
+    // Token有効期限チェック
+    checkExpiration();
 
     const endpoint = 'https://api.spotify.com/v1/me/top/artists';
     const headers = { Authorization: `Bearer ${accessToken}` };
     axios
       .get(endpoint, { headers })
       .then((res) => {
-        console.log(res.data.items);
         setArtists(res.data.items);
       })
       .catch((error) => {
@@ -112,13 +127,14 @@ export default function index() {
       );
       return;
     }
+    // Token有効期限チェック
+    checkExpiration();
 
     const endpoint = 'https://api.spotify.com/v1/me/top/tracks';
     const headers = { Authorization: `Bearer ${accessToken}` };
     axios
       .get(endpoint, { headers })
       .then((res) => {
-        console.log(res.data.items);
         setTracks(res.data.items);
       })
       .catch((error) => {
