@@ -9,9 +9,26 @@
   justify-content: center;
   padding: rem(12px) rem(32px);
 }
+
 .login {
   background-color: $secondary-color;
   color: $white;
   font-size: rem(20px);
   font-weight: bold;
+}
+
+.link {
+  background-color: $link-color;
+  color: $white;
+  font-size: rem(16px);
+}
+
+.buttonWrap {
+  display: flex;
+  margin: rem(40px) 0 0 0;
+  justify-content: center;
+  width: 100%;
+  & .button:nth-of-type(2) {
+    margin: 0 0 0 rem(16px);
+  }
 }

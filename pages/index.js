@@ -119,21 +119,23 @@ export default function index() {
       <main>
         <section className={topStyles.sec_top}>
           <h1 className={topStyles.heading1}>Create Playlists App</h1>
-          <div className={topStyles.buttonWrap}>
+          <div className={buttonStyles.buttonWrap}>
             <button
               className={`${buttonStyles.button} ${buttonStyles.login}`}
               onClick={auth}>
               Sign in with Spotify
             </button>
+          </div>
+          <div className={buttonStyles.buttonWrap}>
             <button
-              className={`${buttonStyles.button} ${buttonStyles.login}`}
+              className={`${buttonStyles.button} ${buttonStyles.link}`}
               onClick={getArtist}>
-              get artist
+              Top Artist
             </button>
             <button
-              className={`${buttonStyles.button} ${buttonStyles.login}`}
+              className={`${buttonStyles.button} ${buttonStyles.link}`}
               onClick={getTracks}>
-              get tracks
+              Top Tracks
             </button>
           </div>
           <ul>{displayArtists}</ul>
