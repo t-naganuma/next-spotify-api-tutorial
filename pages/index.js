@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import styles from '../styles/layout/Layout.module.scss';
 import topStyles from '../styles/layout/Top.module.scss';
 import buttonStyles from '../styles/components/Button.module.scss';
+import auth from '../lib/auth.js';
+import checkExpiration from '../lib/checkExpiration.js';
 
 export default function index() {
   const [artists, setArtists] = useState([]);
@@ -37,49 +39,6 @@ export default function index() {
     };
     getAccessToken();
   }, []);
-
-  const checkExpiration = () => {
-    // Tokenの有効期限チェック
-    const expiredAt = new Date(localStorage.getItem('expiredAt'));
-    const now = new Date();
-    if (expiredAt.getTime() < now.getTime()) {
-      refreshAccessToken();
-    }
-  };
-
-  const auth = () => {
-    const endpoint = 'http://localhost:3000/api/spotify/auth';
-    axios.get(endpoint).then((res) => {
-      window.location.href =
-        'https://accounts.spotify.com' + res.data.redirect_url;
-    });
-  };
-
-  const refreshAccessToken = async () => {
-    if (!localStorage.getItem('refreshToken')) {
-      alert(
-        'リフレッシュトークンがありません。\nauthボタンを押して認証し直してください。'
-      );
-      return;
-    }
-    const endpoint = 'http://localhost:3000/api/spotify/refreshAccessToken';
-    const params = { refresh_token: localStorage.getItem('refreshToken') };
-    const response = await axios
-      .get(endpoint, { params })
-      .then((res) => res.data);
-    localStorage.setItem('accessToken', response.accessToken);
-
-    // Tokenの有効期限を時間に直してセット
-    const now = new Date();
-    const expiration = response.expires_in / 60 / 60;
-    now.setHours(now.getHours() + expiration);
-    localStorage.setItem('expiredAt', now);
-
-    if (localStorage.getItem('accessToken')) {
-      alert('アクセストークンを更新しました。');
-      return;
-    }
-  };
 
   // APIを叩いて結果をstateに格納する
   const getArtist = () => {
