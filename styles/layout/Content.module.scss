@@ -13,3 +13,39 @@
   font-weight: bold;
   text-align: center;
 }
+
+.list {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: rem(12px) 0;
+}
+
+.img {
+  height: 50px;
+  min-width: 50px;
+  width: 50px;
+}
+
+.artist_info {
+  display: flex;
+  flex-direction: column;
+  margin: 0 0 0 rem(12px);
+}
+
+.order_number {
+  color: $sub-content-color;
+  min-width: rem(35px);
+}
+
+.content_name {
+  color: $content-color;
+  font-size: rem(16px);
+  font-weight: bold;
+}
+
+.genre_info {
+  color: $sub-content-color;
+  font-size: rem(12px);
+  margin: rem(4px) 0 0 0;
+}
