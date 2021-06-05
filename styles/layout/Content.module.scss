@@ -1,0 +1,15 @@
+@import '../variables.scss';
+@import '../mixin.scss';
+@import '../function.scss';
+
+.sec_top {
+  margin: 0 auto;
+  max-width: 1000px;
+}
+
+.heading1 {
+  color: $text-color;
+  font-size: rem(32px);
+  font-weight: bold;
+  text-align: center;
+}

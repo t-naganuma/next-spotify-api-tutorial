@@ -1,10 +1,24 @@
 import axios from 'axios'
 
+const generateRandomString = (length) => {
+  let text = '';
+  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+  for(let i = 0; i < length; i++) {
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+  }
+  return text;
+}
+
 export default async (req, res) => {
   const params = new URLSearchParams();
+  const scopes = 'user-read-recently-played user-top-read playlist-modify-public streaming'
+  const state = generateRandomString(16);
   params.append('client_id', process.env.CLIENT_ID);
   params.append('response_type', 'code');
   params.append('redirect_uri', 'http://localhost:3000');
+  params.append('scope', scopes);
+  params.append('state', state);
   const endpoint = 'https://accounts.spotify.com/authorize';
   const response = await axios.get(endpoint, {params});
 
