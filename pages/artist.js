@@ -95,13 +95,13 @@ export default function artist() {
   };
 
   const displayArtists = artists.map((artist, i) => {
-    // console.log(artist);
+    console.log(artist);
     return (
       <li key={artist.id} className={contentStyles.list}>
         <span className={contentStyles.order_number}>{i + 1}</span>
         <img
           className={contentStyles.img}
-          src={artist.images[0].url}
+          src={artist.images[1].url}
           alt={artist.name}
         />
         <span className={contentStyles.artist_info}>

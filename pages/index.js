@@ -1,5 +1,6 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import styles from '../styles/layout/Layout.module.scss';
 import topStyles from '../styles/layout/Top.module.scss';
 import buttonStyles from '../styles/components/Button.module.scss';
@@ -127,11 +128,13 @@ export default function index() {
             </button>
           </div>
           <div className={buttonStyles.buttonWrap}>
-            <button
-              className={`${buttonStyles.button} ${buttonStyles.link}`}
-              onClick={getArtist}>
-              Top Artist
-            </button>
+            <Link href="/artist">
+              <button
+                className={`${buttonStyles.button} ${buttonStyles.link}`}
+                onClick={getArtist}>
+                Top Artist
+              </button>
+            </Link>
             <button
               className={`${buttonStyles.button} ${buttonStyles.link}`}
               onClick={getTracks}>
