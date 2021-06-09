@@ -72,6 +72,52 @@ export default function artist() {
     );
   });
 
+  const createPlaylist = async () => {
+    const accessToken = localStorage.getItem('accessToken');
+    const endpoint = 'https://api.spotify.com/v1/me';
+    const headers = { Authorization: `Bearer ${accessToken}` };
+    const user_id = await axios.get(endpoint, { headers }).then((res) => {
+      return res.data.id;
+    });
+
+    const data = {
+      name: 'New playlist',
+      description: 'New Playlist',
+      public: true,
+    };
+    const playlistId = await axios
+      .post(`https://api.spotify.com/v1/users/${user_id}/playlists`, data, {
+        headers,
+      })
+      .then((res) => {
+        return res.data.id;
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+
+    const tracks = {
+      uris: [
+        'spotify:track:4iV5W9uYEdYUVa79Axb7Rh',
+        'spotify:track:1301WleyT98MSxVHPZCA6M',
+        'spotify:episode:512ojhOuo1ktJprKbVcKyQ',
+      ],
+    };
+    await axios
+      .post(
+        `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+        tracks,
+        {
+          headers,
+        }
+      )
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
   return (
     <div className={styles.container}>
       <main>
@@ -83,6 +129,9 @@ export default function artist() {
             height={600}
           /> */}
           <h1 className={contentStyles.heading1}>Top Artists</h1>
+          <button className={buttonStyles.button} onClick={createPlaylist}>
+            Create Playlist
+          </button>
           <button
             className={buttonStyles.button}
             onClick={() => getArtistByTerm('short_term')}>
