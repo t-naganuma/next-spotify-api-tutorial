@@ -18,9 +18,16 @@
 }
 
 .link {
-  background-color: $link-color;
+  background-color: $secondary-color;
   color: $white;
   font-size: rem(16px);
+}
+
+.time_range {
+  background-color: $secondary-color;
+  color: $white;
+  font-size: rem(16px);
+  font-weight: bold;
 }
 
 .buttonWrap {

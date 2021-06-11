@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import Image from 'next/image';
+import Link from 'next/link';
 import axios from 'axios';
 import checkExpiration from '../lib/checkExpiration';
 import styles from '../styles/layout/Layout.module.scss';
 import contentStyles from '../styles/layout/Content.module.scss';
+import artistStyles from '../styles/layout/Artist.module.scss';
 import buttonStyles from '../styles/components/Button.module.scss';
 
 export default function artist() {
@@ -23,8 +24,7 @@ export default function artist() {
       // Spotify ユーザーのTOP Artist取得
       const endpoint = 'https://api.spotify.com/v1/me/top/artists';
       const headers = { Authorization: `Bearer ${accessToken}` };
-      axios
-        .get(endpoint, { headers })
+      axios.get(endpoint, { headers })
         .then((res) => {
           setArtists(res.data.items);
         })
@@ -41,9 +41,8 @@ export default function artist() {
   const getArtistByTerm = (term) => {
     const accessToken = localStorage.getItem('accessToken');
     const endpoint = `https://api.spotify.com/v1/me/top/artists?time_range=${term}`;
-    const headers = { Authorization: `Bearer ${accessToken}` };
-    axios
-      .get(endpoint, { headers })
+    const headers = { Authorizatiopn: `Bearer ${accessToken}` };
+    axios.get(endpoint, { headers })
       .then((res) => {
         setArtists(res.data.items);
       })
@@ -85,10 +84,7 @@ export default function artist() {
       description: 'New Playlist',
       public: true,
     };
-    const playlistId = await axios
-      .post(`https://api.spotify.com/v1/users/${user_id}/playlists`, data, {
-        headers,
-      })
+    const playlistId = await axios.post(`https://api.spotify.com/v1/users/${user_id}/playlists`, data, { headers })
       .then((res) => {
         return res.data.id;
       })
@@ -103,14 +99,7 @@ export default function artist() {
         'spotify:episode:512ojhOuo1ktJprKbVcKyQ',
       ],
     };
-    await axios
-      .post(
-        `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
-        tracks,
-        {
-          headers,
-        }
-      )
+    await axios.post(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, tracks, { headers })
       .then((res) => {
         console.log(res);
       })
@@ -118,35 +107,54 @@ export default function artist() {
         console.log(error);
       });
   };
+
   return (
     <div className={styles.container}>
+      <header className={artistStyles.header_hero}>
+        <nav className={contentStyles.nav}>
+          <div className={contentStyles.nav_container}>
+            <h1 className={artistStyles.heading1}>Top Artists</h1>
+            <div>
+              <ul className={contentStyles.nav_lists}>
+                <li className={contentStyles.nav_list}>
+                  <Link href="/">Top</Link>
+                </li>
+                <li className={contentStyles.nav_list}>
+                  <Link href="/artist">Artist</Link>
+                </li>
+                <li className={contentStyles.nav_list}>
+                  <Link href="/track">Tracks</Link>
+                </li>
+                <li className={contentStyles.nav_list}>
+                  <Link href="/recent">Recent</Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+      </header>
       <main>
-        <section className={contentStyles.sec_top}>
-          {/* <Image
-            src="/artist.jpg"
-            alt="Top Artist Page"
-            width={1000}
-            height={600}
-          /> */}
-          <h1 className={contentStyles.heading1}>Top Artists</h1>
+        <section className={artistStyles.sec_artist}>
           <button className={buttonStyles.button} onClick={createPlaylist}>
             Create Playlist
           </button>
-          <button
-            className={buttonStyles.button}
-            onClick={() => getArtistByTerm('short_term')}>
-            short term
-          </button>
-          <button
-            className={buttonStyles.button}
-            onClick={() => getArtistByTerm('medium_term')}>
-            medium term
-          </button>
-          <button
-            className={buttonStyles.button}
-            onClick={() => getArtistByTerm('long_term')}>
-            long term
-          </button>
+          <div className={artistStyles.time_range_selector}>
+            <button
+              className={`${buttonStyles.button} ${buttonStyles.time_range}`}
+              onClick={() => getArtistByTerm('short_term')}>
+              Last month
+            </button>
+            <button
+              className={`${buttonStyles.button} ${buttonStyles.time_range}`}
+              onClick={() => getArtistByTerm('medium_term')}>
+              Last 6 month
+            </button>
+            <button
+              className={`${buttonStyles.button} ${buttonStyles.time_range}`}
+              onClick={() => getArtistByTerm('long_term')}>
+              All time
+            </button>
+          </div>
           <ul>{displayArtists}</ul>
         </section>
       </main>
