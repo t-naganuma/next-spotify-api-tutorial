@@ -13,3 +13,110 @@
   font-weight: bold;
   text-align: center;
 }
+
+.list {
+  border-bottom: 1px solid $border-color;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: rem(12px) 0;
+}
+
+.img {
+  height: 50px;
+  min-width: 50px;
+  width: 50px;
+}
+
+.artist_info {
+  display: flex;
+  flex-direction: column;
+  margin: 0 0 0 rem(12px);
+}
+
+.order_number {
+  color: $sub-content-color;
+  min-width: rem(35px);
+}
+
+.content_name {
+  color: $content-color;
+  font-size: rem(16px);
+  font-weight: bold;
+}
+
+.genre_info {
+  color: $sub-content-color;
+  font-size: rem(12px);
+  margin: rem(4px) 0 0 0;
+}
+
+.nav {
+  background-color: $primary-color;
+  padding: 8px 0;
+  width: 100%;
+}
+
+.nav_container {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin: 0 auto;
+  max-width: 1000px;
+  width: 100%;
+}
+
+.nav_lists {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+
+.nav_list {
+  color: $white;
+  font-size: rem(20px);
+  &:not(:last-child) {
+    margin: 0 24px 0 0;
+  }
+  & a {
+    opacity: .5;
+    &:hover {
+      opacity: 1;
+    }
+  }
+  &.active {
+    & a {
+      opacity: 1;
+    }
+  }
+}
+
+.time_range_selector {
+  align-items: center;
+  display: flex;
+  justify-content: flex-start;
+  margin: 0 auto;
+  max-width: 1000px;
+  padding: 16px 0;
+  width: 100%;
+  & button:not(:first-child) {
+    margin: 0 0 0 10px;
+  }
+}
+
+.create_playlists {
+  background-color: $white;
+  border-top: 1px solid $border-color;
+  padding: 16px 0;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  &_inner {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0 auto;
+    max-width: 1000px;
+    width: 100%;
+  }
+}

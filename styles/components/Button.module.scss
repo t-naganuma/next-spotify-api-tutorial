@@ -7,7 +7,9 @@
   box-shadow: 0 4px 14px 0 rgb(0, 0, 0, 0.2);
   display: flex;
   justify-content: center;
+  min-width: 200px;
   padding: rem(12px) rem(32px);
+  transition: box-shadow .3s ease;
 }
 
 .login {
@@ -18,9 +20,33 @@
 }
 
 .link {
-  background-color: $link-color;
+  background-color: $secondary-color;
   color: $white;
   font-size: rem(16px);
+}
+
+.blue {
+  background-color: $secondary-color;
+  color: $white;
+  font-size: rem(16px);
+  font-weight: bold;
+  opacity: .8;
+  transition: opacity .3s ease;
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.dark {
+  background-color: #191970;
+  color: $white;
+  font-size: rem(16px);
+  font-weight: bold;
+  opacity: .8;
+  transition: opacity .3s ease;
+  &:hover {
+    opacity: 1;
+  }
 }
 
 .buttonWrap {
