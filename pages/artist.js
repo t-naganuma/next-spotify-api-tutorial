@@ -110,7 +110,7 @@ export default function artist() {
 
   return (
     <div className={styles.container}>
-      <header className={artistStyles.header_hero}>
+      <header>
         <nav className={contentStyles.nav}>
           <div className={contentStyles.nav_container}>
             <h1 className={artistStyles.heading1}>Top Artists</h1>
@@ -119,7 +119,8 @@ export default function artist() {
                 <li className={contentStyles.nav_list}>
                   <Link href="/">Top</Link>
                 </li>
-                <li className={contentStyles.nav_list}>
+                <li
+                  className={`${contentStyles.nav_list} ${contentStyles.active}`}>
                   <Link href="/artist">Artist</Link>
                 </li>
                 <li className={contentStyles.nav_list}>
@@ -133,29 +134,35 @@ export default function artist() {
           </div>
         </nav>
       </header>
-      <main>
+      <main className={styles.main}>
         <section className={artistStyles.sec_artist}>
-          <button className={buttonStyles.button} onClick={createPlaylist}>
-            Create Playlist
-          </button>
-          <div className={artistStyles.time_range_selector}>
+          <div className={contentStyles.time_range_selector}>
             <button
-              className={`${buttonStyles.button} ${buttonStyles.time_range}`}
+              className={`${buttonStyles.button} ${buttonStyles.blue}`}
               onClick={() => getArtistByTerm('short_term')}>
               Last month
             </button>
             <button
-              className={`${buttonStyles.button} ${buttonStyles.time_range}`}
+              className={`${buttonStyles.button} ${buttonStyles.blue}`}
               onClick={() => getArtistByTerm('medium_term')}>
               Last 6 month
             </button>
             <button
-              className={`${buttonStyles.button} ${buttonStyles.time_range}`}
+              className={`${buttonStyles.button} ${buttonStyles.blue}`}
               onClick={() => getArtistByTerm('long_term')}>
               All time
             </button>
           </div>
           <ul>{displayArtists}</ul>
+          <div className={contentStyles.create_playlists}>
+            <div className={contentStyles.create_playlists_inner}>
+              <button
+                className={`${buttonStyles.button} ${buttonStyles.dark}`}
+                onClick={createPlaylist}>
+                Create Playlist
+              </button>
+            </div>
+          </div>
         </section>
       </main>
     </div>

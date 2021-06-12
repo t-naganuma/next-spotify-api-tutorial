@@ -3,17 +3,10 @@
 @import '../mixin.scss';
 @import '../function.scss';
 
-.header_hero {
-  background-image: url("../../public/artist.jpg");
-  background-repeat: no-repeat;
-  background-size: contain;
-  padding-top: 48.55%;
-  position: relative;
-}
-
 .sec_artist {
   margin: 0 auto;
   max-width: 960px;
+  padding: 0 0 120px 0;
   width: 100%;
 }
 
@@ -21,10 +14,4 @@
   color: $white;
   font-size: rem(28px);
   font-weight: bold;
-}
-
-.time_range_selector {
-  align-items: center;
-  display: flex;
-  justify-content: space-around;
 }
