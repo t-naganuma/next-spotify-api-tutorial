@@ -6,6 +6,7 @@ import styles from '../styles/layout/Layout.module.scss';
 import contentStyles from '../styles/layout/Content.module.scss';
 import artistStyles from '../styles/layout/Artist.module.scss';
 import buttonStyles from '../styles/components/Button.module.scss';
+import modalStyles from '../styles/components/Modal.module.scss';
 
 export default function artist() {
   const [artists, setArtists] = useState([]);
@@ -70,6 +71,10 @@ export default function artist() {
     );
   });
 
+    const fadeInPopup = () => {
+      console.log('flag', flag);
+    };
+
   const createPlaylist = async () => {
     const accessToken = localStorage.getItem('accessToken');
     const headers = { Authorization: `Bearer ${accessToken}` };
@@ -112,6 +117,8 @@ export default function artist() {
       .catch((error) => {
         console.log(error);
       });
+
+    fadeInPopup();
   };
 
   return (
@@ -171,6 +178,14 @@ export default function artist() {
           </div>
         </section>
       </main>
+      <div className={modalStyles.modal}>
+        <div className={modalStyles.body}>
+          <p className={modalStyles.text}>プレイリストを作成しました！</p>
+          <div className={modalStyles.button_area}>
+            <button type="button" className={modalStyles.close}>閉じる</button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
