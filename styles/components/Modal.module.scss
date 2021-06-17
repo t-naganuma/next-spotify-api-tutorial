@@ -1,0 +1,48 @@
+@import '../variables.scss';
+@import '../mixin.scss';
+@import '../function.scss';
+
+.modal {
+  background-color: $white;
+  border: 1px solid $border-color;
+  border-radius: 10px;
+  box-shadow: 0 0 8px #a4a4a4;
+  padding: rem(24px) rem(16px);
+  position: absolute;
+  top: 50vh;
+  left: 50%;
+  opacity: 0;
+  transform: translateX(-50%) translateY(-50%);
+  transition: opacity .3s ease-in-out;
+  width: 400px;
+  z-index: 10;
+}
+
+.modal.is_show {
+  opacity: 1;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.text {
+  font-size: rem(20px);
+  font-weight: bold;
+}
+
+.button_area {
+  margin: rem(20px) 0 0 0;
+}
+
+.close {
+  background-color: $accent-color;
+  border: 1px solid $accent-color;
+  border-radius: 5px;
+  color: $white;
+  font-weight: bold;
+  padding: rem(8px) rem(16px);
+}

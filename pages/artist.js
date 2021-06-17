@@ -6,9 +6,34 @@ import styles from '../styles/layout/Layout.module.scss';
 import contentStyles from '../styles/layout/Content.module.scss';
 import artistStyles from '../styles/layout/Artist.module.scss';
 import buttonStyles from '../styles/components/Button.module.scss';
+import modalStyles from '../styles/components/Modal.module.scss';
+
+
+const Modal = (props) => {
+  if (!props.flag) return <></>;
+
+  const handleCloseModal = () => {
+    props.closeModal();
+  }
+
+  return (
+    <div className={`${modalStyles.modal} ${modalStyles.is_show}`}>
+      <div className={modalStyles.body}>
+        <p className={modalStyles.text}>プレイリストを作成しました！</p>
+        <div className={modalStyles.button_area}>
+          <button type="button" onClick={handleCloseModal} className={modalStyles.close}>
+            閉じる
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function artist() {
   const [artists, setArtists] = useState([]);
+  // let flag = false;
+  const [flag, setFlag] = useState(false);
   useEffect(() => {
     const getArtist = () => {
       const accessToken = localStorage.getItem('accessToken');
@@ -70,6 +95,8 @@ export default function artist() {
     );
   });
 
+
+
   const createPlaylist = async () => {
     const accessToken = localStorage.getItem('accessToken');
     const headers = { Authorization: `Bearer ${accessToken}` };
@@ -105,14 +132,22 @@ export default function artist() {
 
     // 曲のtrack uriを入れる
     const tracks2 = { uris };
-    await axios.post(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, tracks2, { headers })
+    const responseStatus = await axios.post(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, tracks2, { headers })
       .then((res) => {
-        console.log(res);
+        return res.status;
       })
       .catch((error) => {
         console.log(error);
       });
+
+    if (responseStatus === 201) {
+      setFlag(true);
+    }
   };
+
+  const closeModal = () => {
+    setFlag(false);
+  }
 
   return (
     <div className={styles.container}>
@@ -171,6 +206,7 @@ export default function artist() {
           </div>
         </section>
       </main>
+      <Modal flag={flag} closeModal={closeModal} />
     </div>
   );
 }
