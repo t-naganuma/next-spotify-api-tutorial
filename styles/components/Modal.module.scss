@@ -7,18 +7,19 @@
   border: 1px solid $border-color;
   border-radius: 10px;
   box-shadow: 0 0 8px #a4a4a4;
-  display: none;
   padding: rem(24px) rem(16px);
   position: absolute;
   top: 50vh;
   left: 50%;
+  opacity: 0;
   transform: translateX(-50%) translateY(-50%);
+  transition: opacity .3s ease-in-out;
   width: 400px;
   z-index: 10;
 }
 
-.is-show .modal {
-  display: block;
+.modal.is_show {
+  opacity: 1;
 }
 
 .body {
