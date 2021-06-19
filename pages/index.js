@@ -17,26 +17,27 @@ export default function index() {
       const params = {
         code: new URL(window.location.href).searchParams.get('code'),
       };
-      if (params.code) {
-        const response = await axios
-          .get(endpoint, { params })
-          .then((res) => res.data.data);
-        // localStorageにTokenをセット
-        localStorage.setItem('accessToken', response.access_token);
-        localStorage.setItem('refreshToken', response.refresh_token);
+      // params.codeに値が無ければreturn
+      if (! params.code) return;
 
-        // Tokenの有効期限を時間に直してセット
-        const now = new Date();
-        const expiration = response.expires_in / 60 / 60;
-        now.setHours(now.getHours() + expiration);
-        localStorage.setItem('expiredAt', now);
+      const response = await axios
+        .get(endpoint, { params })
+        .then((res) => res.data.data);
+      // localStorageにTokenをセット
+      localStorage.setItem('accessToken', response.access_token);
+      localStorage.setItem('refreshToken', response.refresh_token);
 
-        // ブラウザURL部分のクエリを削除
-        const url = new URL(window.location.href);
-        url.searchParams.delete('code');
-        url.searchParams.delete('state');
-        history.pushState({}, '', url);
-      }
+      // Tokenの有効期限を時間に直してセット
+      const now = new Date();
+      const expiration = response.expires_in / 60 / 60;
+      now.setHours(now.getHours() + expiration);
+      localStorage.setItem('expiredAt', now);
+
+      // ブラウザURL部分のクエリを削除
+      const url = new URL(window.location.href);
+      url.searchParams.delete('code');
+      url.searchParams.delete('state');
+      history.pushState({}, '', url);
     };
     getAccessToken();
   }, []);

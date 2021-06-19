@@ -7,7 +7,7 @@ import contentStyles from '../styles/layout/Content.module.scss';
 import artistStyles from '../styles/layout/Artist.module.scss';
 import buttonStyles from '../styles/components/Button.module.scss';
 import modalStyles from '../styles/components/Modal.module.scss';
-
+import Header from '../components/Header';
 
 const Modal = (props) => {
   if (!props.flag) return <></>;
@@ -50,10 +50,7 @@ export default function artist() {
             setArtists(res.data.items);
           })
           .catch((error) => {
-            console.log(error);
-            alert(
-              'アクセストークンが無効です。\nauthボタンを押して認証し直すか、refresh access tokenボタンを押してトークンを更新してください。'
-            );
+            location.href = '/artist';
           });
           
       } catch(e) {
@@ -155,30 +152,7 @@ export default function artist() {
 
   return (
     <div className={styles.container}>
-      <header>
-        <nav className={contentStyles.nav}>
-          <div className={contentStyles.nav_container}>
-            <h1 className={artistStyles.heading1}>Top Artists</h1>
-            <div>
-              <ul className={contentStyles.nav_lists}>
-                <li className={contentStyles.nav_list}>
-                  <Link href="/">Top</Link>
-                </li>
-                <li
-                  className={`${contentStyles.nav_list} ${contentStyles.active}`}>
-                  <Link href="/artist">Artist</Link>
-                </li>
-                <li className={contentStyles.nav_list}>
-                  <Link href="/track">Tracks</Link>
-                </li>
-                <li className={contentStyles.nav_list}>
-                  <Link href="/recent">Recent</Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </nav>
-      </header>
+      <Header currentPage={'artist'} />
       <main className={styles.main}>
         <section className={artistStyles.sec_artist}>
           <div className={contentStyles.time_range_selector}>
