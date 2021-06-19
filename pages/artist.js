@@ -32,33 +32,37 @@ const Modal = (props) => {
 
 export default function artist() {
   const [artists, setArtists] = useState([]);
-  // let flag = false;
   const [flag, setFlag] = useState(false);
   useEffect(() => {
     const getArtist = () => {
-      const accessToken = localStorage.getItem('accessToken');
-      if (!accessToken) {
-        alert(
-          'アクセストークンが取得できていません。\nauthボタンを押して認証し直してください。'
-        );
-        return;
-      }
-      checkExpiration();
+      try {
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) {
+          throw 'アクセストークンを取得できていません';
+        }
+        checkExpiration();
 
-      // Spotify ユーザーのTOP Artist取得
-      const endpoint = 'https://api.spotify.com/v1/me/top/artists';
-      const headers = { Authorization: `Bearer ${accessToken}` };
-      axios.get(endpoint, { headers })
-        .then((res) => {
-          setArtists(res.data.items);
-        })
-        .catch((error) => {
-          console.log(error);
-          alert(
-            'アクセストークンが無効です。\nauthボタンを押して認証し直すか、refresh access tokenボタンを押してトークンを更新してください。'
-          );
-        });
-    };
+        // Spotify ユーザーのTOP Artist取得
+        const endpoint = 'https://api.spotify.com/v1/me/top/artists';
+        const headers = { Authorization: `Bearer ${accessToken}` };
+        axios.get(endpoint, { headers })
+          .then((res) => {
+            setArtists(res.data.items);
+          })
+          .catch((error) => {
+            console.log(error);
+            alert(
+              'アクセストークンが無効です。\nauthボタンを押して認証し直すか、refresh access tokenボタンを押してトークンを更新してください。'
+            );
+          });
+          
+      } catch(e) {
+        if (e === 'アクセストークンを取得できていません') {
+          alert('認証の有効期限が切れています。ログインしてください。')
+          location.href = '/';
+        }
+      }
+    }
     getArtist();
   }, []);
 
