@@ -8,7 +8,6 @@ import auth from '../lib/auth.js';
 import checkExpiration from '../lib/checkExpiration.js';
 
 export default function index() {
-  const [artists, setArtists] = useState([]);
   const [tracks, setTracks] = useState([]);
 
   useEffect(() => {
@@ -41,43 +40,6 @@ export default function index() {
     };
     getAccessToken();
   }, []);
-
-  // APIを叩いて結果をstateに格納する
-  const getArtist = () => {
-    const accessToken = localStorage.getItem('accessToken');
-    if (!accessToken) {
-      alert(
-        'アクセストークンが取得できていません。\nauthボタンを押して認証し直してください。'
-      );
-      return;
-    }
-    // Token有効期限チェック
-    checkExpiration();
-
-    const endpoint = 'https://api.spotify.com/v1/me/top/artists';
-    const headers = { Authorization: `Bearer ${accessToken}` };
-    axios
-      .get(endpoint, { headers })
-      .then((res) => {
-        setArtists(res.data.items);
-      })
-      .catch((error) => {
-        console.log(error);
-        // エラーは401と決めうち
-        alert(
-          'アクセストークンが無効です。\nauthボタンを押して認証し直すか、refresh access tokenボタンを押してトークンを更新してください。'
-        );
-      });
-  };
-
-  const displayArtists = artists.map((artist) => {
-    return (
-      <li key={artist.id}>
-        {artist.name}
-        <img src={artist.images[0].url} alt="" />
-      </li>
-    );
-  });
 
   // APIを叩いて結果をstateに格納する
   const getTracks = () => {
@@ -130,9 +92,7 @@ export default function index() {
           </div>
           <div className={buttonStyles.buttonWrap}>
             <Link href="/artist">
-              <button
-                className={`${buttonStyles.button} ${buttonStyles.link}`}
-                onClick={getArtist}>
+              <button className={`${buttonStyles.button} ${buttonStyles.link}`}>
                 Top Artist
               </button>
             </Link>
@@ -142,7 +102,6 @@ export default function index() {
               Top Tracks
             </button>
           </div>
-          <ul>{displayArtists}</ul>
           <ul>{displayTracks}</ul>
         </section>
       </main>
