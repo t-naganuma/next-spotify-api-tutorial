@@ -53,8 +53,8 @@ export default function artist() {
             location.href = '/artist';
           });
           
-      } catch(e) {
-        if (e === 'アクセストークンを取得できていません') {
+      } catch(error) {
+        if (error === 'アクセストークンを取得できていません') {
           alert('認証の有効期限が切れています。ログインしてください。')
           location.href = '/';
         }
