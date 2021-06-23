@@ -19,9 +19,17 @@ export default function index() {
       // params.codeに値が無ければreturn
       if (! params.code) return;
 
+
       const response = await axios
         .get(endpoint, { params })
-        .then((res) => res.data.data);
+        .then((res) => res.data.data)
+        .catch((error) => {
+          const statusCode = error.response.status;
+          if (statusCode === 500) {
+            alert('Spotifyのサーバーで障害が起きています。復旧までお待ちください。');
+            return false;
+          }
+        });
       // localStorageにTokenをセット
       localStorage.setItem('accessToken', response.access_token);
       localStorage.setItem('refreshToken', response.refresh_token);
