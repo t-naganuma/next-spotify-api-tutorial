@@ -72,10 +72,11 @@ export default function artist() {
         setArtists(res.data.items);
       })
       .catch((error) => {
-        console.log(error);
-        alert(
-          'アクセストークンが無効です。\nauthボタンを押して認証し直すか、refresh access tokenボタンを押してトークンを更新してください。'
-        );
+        const statusCode = error.response.status;
+        if (statusCode === 500) {
+          alert('Spotifyのサーバーで障害が起きています。復旧までお待ちください。');
+          location.href = '/';
+        }
       });
   };
 
