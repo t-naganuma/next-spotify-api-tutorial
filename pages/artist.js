@@ -55,7 +55,7 @@ export default function artist() {
           
       } catch(error) {
         if (error === 'アクセストークンを取得できていません') {
-          alert('認証の有効期限が切れています。ログインしてください。')
+          alert(`サインインしていません。\nサインインしてください。`);
           location.href = '/';
         }
       }
