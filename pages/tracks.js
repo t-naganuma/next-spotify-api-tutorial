@@ -107,73 +107,25 @@ export default function tracks() {
   });
 
   const createPlaylist = async () => {
-    const accessToken = localStorage.getItem('accessToken');
-    const headers = { Authorization: `Bearer ${accessToken}` };
-
-    // TODO axiosで通信する部分をモジュール化する, libにまとめる。
     try {
       // user_idを取得
-      
       const user_id = await spotifyApiModule.getUserId();
-      
-      // const endpoint = `${config.API_URL}/me`;
-      // const user_id = await axios
-      //   .get(endpoint, { headers })
-      //   .then((res) => {
-      //     return res.data.id;
-      //   })
-      //   .catch((error) => {
-      //     throw error.response;
-      //   });
-
-      // プレイリスト名、説明
-      // const playlistsConfig = {
-      //   name: 'Playlists of your favorite tracks',
-      //   description: 'Playlists of your favorite tracks',
-      //   public: true,
-      // };
-
       // // 空のplaylistを作成,idを取得
       const playlistId = await spotifyApiModule.getPlaylistId(user_id);
-      // const playlistId = await axios
-      //   .post(`${config.API_URL}/users/${user_id}/playlists`, playlistsConfig, {
-      //     headers,
-      //   })
-      //   .then((res) => {
-      //     return res.data.id;
-      //   })
-      //   .catch((error) => {
-      //     throw error.response;
-      //   });
-
       const uris = tracks.map((track) => {return track.uri;});
-
       // // 曲のtrack uriを入れる
       const tracks_uri = { uris };
       const responseStatus = await spotifyApiModule.createPlaylist(playlistId, tracks_uri);
-      // const responseStatus = await axios
-      //   .post(`${config.API_URL}/playlists/${playlistId}/tracks`, tracks_uri, {
-      //     headers,
-      //   })
-      //   .then((res) => {
-      //     return res.status;
-      //   })
-      //   .catch((error) => {
-      //     throw error.response;
-      //   });
 
       if (responseStatus === 201) {
         setFlag(true);
       }
     } catch (error) {
-      // const errorObject = JSON.stringify(error.data.error);
-      const errorObject = JSON.stringify(error);
-      console.log(error);
-      // const statusCode = error.data.error.status;
-
-      // let m = alertsByErrorCode(statusCode);
-      // alert(`${errorObject}\n\n${m}`);
-      // location.href = '/';
+      const errorObject = JSON.stringify(error.data.error);
+      const statusCode = error.data.error.status;
+      let m = alertsByErrorCode(statusCode);
+      alert(`${errorObject}\n\n${m}`);
+      location.href = '/';
     }
   };
 
