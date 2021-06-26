@@ -66,31 +66,30 @@ export default function tracks() {
     getTracks();
   }, []);
 
-  // const getArtistByTerm = (term) => {
-  //   const accessToken = localStorage.getItem('accessToken');
-  //   const endpoint = `${config.API_URL}/me/top/artists?time_range=${term}`;
-  //   const headers = { Authorization: `Bearer ${accessToken}` };
-  //   try {
-  //     axios
-  //       .get(endpoint, { headers })
-  //       .then((res) => {
-  //         setArtists(res.data.items);
-  //       })
-  //       .catch((error) => {
-  //         throw error.response;
-  //       });
-  //   } catch (error) {
-  //     const errorObject = JSON.stringify(error.data.error);
-  //     const statusCode = error.data.error.status;
+  const getTrackByTerm = (term) => {
+    const accessToken = localStorage.getItem('accessToken');
+    const endpoint = `${config.API_URL}/me/top/tracks?time_range=${term}`;
+    const headers = { Authorization: `Bearer ${accessToken}` };
+    try {
+      axios
+        .get(endpoint, { headers })
+        .then((res) => {
+          setTracks(res.data.items);
+        })
+        .catch((error) => {
+          throw error.response;
+        });
+    } catch (error) {
+      const errorObject = JSON.stringify(error.data.error);
+      const statusCode = error.data.error.status;
 
-  //     let m = alertsByErrorCode(statusCode);
-  //     alert(`${errorObject}\n\n${m}`);
-  //     location.href = '/';
-  //   }
-  // };
+      let m = alertsByErrorCode(statusCode);
+      alert(`${errorObject}\n\n${m}`);
+      location.href = '/';
+    }
+  };
 
   const displayTracks = tracks.map((track, i) => {
-    console.log(track)
     return (
       <li key={track.id} className={contentStyles.list}>
         <span className={contentStyles.order_number}>{i + 1}</span>
@@ -207,17 +206,17 @@ export default function tracks() {
           <div className={contentStyles.time_range_selector}>
             <button
               className={`${buttonStyles.button} ${buttonStyles.blue}`}
-              onClick={() => getArtistByTerm('short_term')}>
+              onClick={() => getTrackByTerm('short_term')}>
               Last month
             </button>
             <button
               className={`${buttonStyles.button} ${buttonStyles.blue}`}
-              onClick={() => getArtistByTerm('medium_term')}>
+              onClick={() => getTrackByTerm('medium_term')}>
               Last 6 month
             </button>
             <button
               className={`${buttonStyles.button} ${buttonStyles.blue}`}
-              onClick={() => getArtistByTerm('long_term')}>
+              onClick={() => getTrackByTerm('long_term')}>
               All time
             </button>
           </div>
