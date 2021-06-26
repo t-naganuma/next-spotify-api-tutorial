@@ -5,7 +5,6 @@ import checkExpiration from '../lib/checkExpiration';
 import config from '../config';
 import styles from '../styles/layout/Layout.module.scss';
 import contentStyles from '../styles/layout/Content.module.scss';
-import artistStyles from '../styles/layout/Artist.module.scss';
 import buttonStyles from '../styles/components/Button.module.scss';
 import modalStyles from '../styles/components/Modal.module.scss';
 import Header from '../components/Header';
@@ -197,7 +196,7 @@ export default function artist() {
     <div className={styles.container}>
       <Header currentPage={'artist'} title={'Top Artists'} />
       <main className={styles.main}>
-        <section className={artistStyles.sec_artist}>
+        <section className={contentStyles.sec_contents}>
           <div className={contentStyles.time_range_selector}>
             <button
               className={`${buttonStyles.button} ${buttonStyles.blue}`}

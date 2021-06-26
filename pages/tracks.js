@@ -4,7 +4,6 @@ import checkExpiration from '../lib/checkExpiration';
 import config from '../config';
 import styles from '../styles/layout/Layout.module.scss';
 import contentStyles from '../styles/layout/Content.module.scss';
-import artistStyles from '../styles/layout/Artist.module.scss';
 import buttonStyles from '../styles/components/Button.module.scss';
 import modalStyles from '../styles/components/Modal.module.scss';
 import Header from '../components/Header';
@@ -45,7 +44,7 @@ export default function tracks() {
         }
         checkExpiration();
 
-        // Spotify ユーザーのTOP Artist取得
+        // Spotify ユーザーのTOP Tracks取得
         const endpoint = `${config.API_URL}/me/top/tracks`;
         const headers = { Authorization: `Bearer ${accessToken}` };
         axios
@@ -98,7 +97,7 @@ export default function tracks() {
           src={track.album.images[1].url}
           alt={track.name}
         />
-        <span className={contentStyles.artist_info}>
+        <span className={contentStyles.music_info}>
           <p className={contentStyles.content_name}>{track.name}</p>
           <p className={contentStyles.genre_info}>{track.artists[0].name}</p>
         </span>
@@ -126,7 +125,7 @@ export default function tracks() {
       // プレイリスト名、説明
       const playlistsConfig = {
         name: 'Playlists of your favorite tracks',
-        description: 'Playlists of your favorite artists',
+        description: 'Playlists of your favorite tracks',
         public: true,
       };
 
@@ -192,7 +191,7 @@ export default function tracks() {
     <div className={styles.container}>
       <Header currentPage={'tracks'} title={'Top Tracks'} />
       <main className={styles.main}>
-        <section className={artistStyles.sec_artist}>
+        <section className={contentStyles.sec_contents}>
           <div className={contentStyles.time_range_selector}>
             <button
               className={`${buttonStyles.button} ${buttonStyles.blue}`}
