@@ -1,6 +1,7 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import config from '../config';
 import styles from '../styles/layout/Layout.module.scss';
 import topStyles from '../styles/layout/Top.module.scss';
 import buttonStyles from '../styles/components/Button.module.scss';
@@ -12,7 +13,7 @@ export default function index() {
 
   useEffect(() => {
     const getAccessToken = async () => {
-      const endpoint = 'http://localhost:3000/api/spotify/getAccessToken';
+      const endpoint = `${config.BASE_URL}/api/spotify/getAccessToken`;
       const params = {
         code: new URL(window.location.href).searchParams.get('code'),
       };
@@ -61,7 +62,7 @@ export default function index() {
     // Token有効期限チェック
     checkExpiration();
 
-    const endpoint = 'https://api.spotify.com/v1/me/top/tracks';
+    const endpoint = `${config.API_URL}/v1/me/top/tracks`;
     const headers = { Authorization: `Bearer ${accessToken}` };
     axios
       .get(endpoint, { headers })
