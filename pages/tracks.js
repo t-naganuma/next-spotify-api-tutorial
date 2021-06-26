@@ -106,79 +106,69 @@ export default function tracks() {
     );
   });
 
-  // const createPlaylist = async () => {
-  //   const accessToken = localStorage.getItem('accessToken');
-  //   const headers = { Authorization: `Bearer ${accessToken}` };
+  const createPlaylist = async () => {
+    const accessToken = localStorage.getItem('accessToken');
+    const headers = { Authorization: `Bearer ${accessToken}` };
 
-  //   // TODO axiosで通信する部分をモジュール化する, libにまとめる。
-  //   try {
-  //     // user_idを取得
-  //     const endpoint = `${config.API_URL}/me`;
-  //     const user_id = await axios
-  //       .get(endpoint, { headers })
-  //       .then((res) => {
-  //         return res.data.id;
-  //       })
-  //       .catch((error) => {
-  //         throw error.response;
-  //       });
+    // TODO axiosで通信する部分をモジュール化する, libにまとめる。
+    try {
+      // user_idを取得
+      const endpoint = `${config.API_URL}/me`;
+      const user_id = await axios
+        .get(endpoint, { headers })
+        .then((res) => {
+          return res.data.id;
+        })
+        .catch((error) => {
+          throw error.response;
+        });
 
-  //     // プレイリスト名、説明
-  //     const playlistsConfig = {
-  //       name: 'Playlists of your favorite artists',
-  //       description: 'Playlists of your favorite artists',
-  //       public: true,
-  //     };
+      // プレイリスト名、説明
+      const playlistsConfig = {
+        name: 'Playlists of your favorite tracks',
+        description: 'Playlists of your favorite artists',
+        public: true,
+      };
 
-  //     // 空のplaylistを作成,idを取得
-  //     const playlistId = await axios
-  //       .post(`${config.API_URL}/users/${user_id}/playlists`, playlistsConfig, {
-  //         headers,
-  //       })
-  //       .then((res) => {
-  //         return res.data.id;
-  //       })
-  //       .catch((error) => {
-  //         throw error.response;
-  //       });
+      // 空のplaylistを作成,idを取得
+      const playlistId = await axios
+        .post(`${config.API_URL}/users/${user_id}/playlists`, playlistsConfig, {
+          headers,
+        })
+        .then((res) => {
+          return res.data.id;
+        })
+        .catch((error) => {
+          throw error.response;
+        });
 
-  //     const uris = await Promise.all(
-  //       artists.map(async (artist) => {
-  //         const topTrackEndpoint = `${config.API_URL}/artists/${artist.id}/top-tracks?market=JP`;
-  //         return await axios
-  //           .get(topTrackEndpoint, { headers })
-  //           .then((res) => res.data.tracks[0].uri)
-  //           .catch((error) => {
-  //             throw error.response;
-  //           });
-  //       })
-  //     );
+      const uris = tracks.map((track) => {return track.uri;});
 
-  //     // 曲のtrack uriを入れる
-  //     const tracks2 = { uris };
-  //     const responseStatus = await axios
-  //       .post(`${config.API_URL}/playlists/${playlistId}/tracks`, tracks2, {
-  //         headers,
-  //       })
-  //       .then((res) => {
-  //         return res.status;
-  //       })
-  //       .catch((error) => {
-  //         throw error.response;
-  //       });
+      // 曲のtrack uriを入れる
+      const tracks_uri = { uris };
+      const responseStatus = await axios
+        .post(`${config.API_URL}/playlists/${playlistId}/tracks`, tracks_uri, {
+          headers,
+        })
+        .then((res) => {
+          return res.status;
+        })
+        .catch((error) => {
+          throw error.response;
+        });
 
-  //     if (responseStatus === 201) {
-  //       setFlag(true);
-  //     }
-  //   } catch (error) {
-  //     const errorObject = JSON.stringify(error.data.error);
-  //     const statusCode = error.data.error.status;
+      if (responseStatus === 201) {
+        setFlag(true);
+      }
+    } catch (error) {
+      const errorObject = JSON.stringify(error.data.error);
+      const statusCode = error.data.error.status;
 
-  //     let m = alertsByErrorCode(statusCode);
-  //     alert(`${errorObject}\n\n${m}`);
-  //     location.href = '/';
-  //   }
-  // };
+      let m = alertsByErrorCode(statusCode);
+      alert(`${errorObject}\n\n${m}`);
+      location.href = '/';
+    }
+  };
 
   function alertsByErrorCode(status) {
     const messagesByErrorCode = {
@@ -223,11 +213,11 @@ export default function tracks() {
           <ul>{displayTracks}</ul>
           <div className={contentStyles.create_playlists}>
             <div className={contentStyles.create_playlists_inner}>
-              {/* <button
+              <button
                 className={`${buttonStyles.button} ${buttonStyles.dark}`}
                 onClick={createPlaylist}>
                 Create Playlist
-              </button> */}
+              </button>
             </div>
           </div>
         </section>
