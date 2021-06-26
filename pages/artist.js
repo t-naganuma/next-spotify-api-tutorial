@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
 import axios from 'axios';
 import checkExpiration from '../lib/checkExpiration';
 import config from '../config';
@@ -94,7 +93,7 @@ export default function artist() {
           src={artist.images[1].url}
           alt={artist.name}
         />
-        <span className={contentStyles.artist_info}>
+        <span className={contentStyles.music_info}>
           <p className={contentStyles.content_name}>{artist.name}</p>
           <p className={contentStyles.genre_info}>{artist.genres}</p>
         </span>
