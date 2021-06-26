@@ -1,6 +1,7 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import config from '../config';
 import styles from '../styles/layout/Layout.module.scss';
 import topStyles from '../styles/layout/Top.module.scss';
 import buttonStyles from '../styles/components/Button.module.scss';
@@ -8,21 +9,28 @@ import auth from '../lib/auth.js';
 import checkExpiration from '../lib/checkExpiration.js';
 
 export default function index() {
-  const [artists, setArtists] = useState([]);
   const [tracks, setTracks] = useState([]);
 
   useEffect(() => {
     const getAccessToken = async () => {
-      const endpoint = 'http://localhost:3000/api/spotify/getAccessToken';
+      const endpoint = `${config.BASE_URL}/api/spotify/getAccessToken`;
       const params = {
         code: new URL(window.location.href).searchParams.get('code'),
       };
       // params.codeに値が無ければreturn
       if (! params.code) return;
 
+
       const response = await axios
         .get(endpoint, { params })
-        .then((res) => res.data.data);
+        .then((res) => res.data.data)
+        .catch((error) => {
+          const statusCode = error.response.status;
+          if (statusCode === 500) {
+            alert('Spotifyのサーバーで障害が起きています。復旧までお待ちください。');
+            return false;
+          }
+        });
       // localStorageにTokenをセット
       localStorage.setItem('accessToken', response.access_token);
       localStorage.setItem('refreshToken', response.refresh_token);
@@ -43,43 +51,6 @@ export default function index() {
   }, []);
 
   // APIを叩いて結果をstateに格納する
-  const getArtist = () => {
-    const accessToken = localStorage.getItem('accessToken');
-    if (!accessToken) {
-      alert(
-        'アクセストークンが取得できていません。\nauthボタンを押して認証し直してください。'
-      );
-      return;
-    }
-    // Token有効期限チェック
-    checkExpiration();
-
-    const endpoint = 'https://api.spotify.com/v1/me/top/artists';
-    const headers = { Authorization: `Bearer ${accessToken}` };
-    axios
-      .get(endpoint, { headers })
-      .then((res) => {
-        setArtists(res.data.items);
-      })
-      .catch((error) => {
-        console.log(error);
-        // エラーは401と決めうち
-        alert(
-          'アクセストークンが無効です。\nauthボタンを押して認証し直すか、refresh access tokenボタンを押してトークンを更新してください。'
-        );
-      });
-  };
-
-  const displayArtists = artists.map((artist) => {
-    return (
-      <li key={artist.id}>
-        {artist.name}
-        <img src={artist.images[0].url} alt="" />
-      </li>
-    );
-  });
-
-  // APIを叩いて結果をstateに格納する
   const getTracks = () => {
     const accessToken = localStorage.getItem('accessToken');
     if (!accessToken) {
@@ -91,7 +62,7 @@ export default function index() {
     // Token有効期限チェック
     checkExpiration();
 
-    const endpoint = 'https://api.spotify.com/v1/me/top/tracks';
+    const endpoint = `${config.API_URL}/v1/me/top/tracks`;
     const headers = { Authorization: `Bearer ${accessToken}` };
     axios
       .get(endpoint, { headers })
@@ -130,9 +101,7 @@ export default function index() {
           </div>
           <div className={buttonStyles.buttonWrap}>
             <Link href="/artist">
-              <button
-                className={`${buttonStyles.button} ${buttonStyles.link}`}
-                onClick={getArtist}>
+              <button className={`${buttonStyles.button} ${buttonStyles.link}`}>
                 Top Artist
               </button>
             </Link>
@@ -142,7 +111,6 @@ export default function index() {
               Top Tracks
             </button>
           </div>
-          <ul>{displayArtists}</ul>
           <ul>{displayTracks}</ul>
         </section>
       </main>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import axios from 'axios';
 import checkExpiration from '../lib/checkExpiration';
+import config from '../config';
 import styles from '../styles/layout/Layout.module.scss';
 import contentStyles from '../styles/layout/Content.module.scss';
 import artistStyles from '../styles/layout/Artist.module.scss';
@@ -43,19 +44,19 @@ export default function artist() {
         checkExpiration();
 
         // Spotify ユーザーのTOP Artist取得
-        const endpoint = 'https://api.spotify.com/v1/me/top/artists';
+        const endpoint = `${config.API_URL}/me/top/artists`;
         const headers = { Authorization: `Bearer ${accessToken}` };
         axios.get(endpoint, { headers })
           .then((res) => {
             setArtists(res.data.items);
           })
           .catch((error) => {
-            location.href = '/artist';
+            throw error.response.status;
           });
           
-      } catch(e) {
-        if (e === 'アクセストークンを取得できていません') {
-          alert('認証の有効期限が切れています。ログインしてください。')
+      } catch(error) {
+        if (error === 'アクセストークンを取得できていません') {
+          alert(`サインインしていません。\nサインインしてください。`);
           location.href = '/';
         }
       }
@@ -65,18 +66,24 @@ export default function artist() {
 
   const getArtistByTerm = (term) => {
     const accessToken = localStorage.getItem('accessToken');
-    const endpoint = `https://api.spotify.com/v1/me/top/artists?time_range=${term}`;
+    const endpoint = `${config.API_URL}/me/top/artists?time_range=${term}`;
     const headers = { Authorization: `Bearer ${accessToken}` };
-    axios.get(endpoint, { headers })
-      .then((res) => {
-        setArtists(res.data.items);
-      })
-      .catch((error) => {
-        console.log(error);
-        alert(
-          'アクセストークンが無効です。\nauthボタンを押して認証し直すか、refresh access tokenボタンを押してトークンを更新してください。'
-        );
-      });
+    try {
+      axios.get(endpoint, { headers })
+        .then((res) => {
+          setArtists(res.data.items);
+        })
+        .catch((error) => {
+          throw error.response;
+        });
+    } catch(error) {
+      const errorObject = JSON.stringify(error.data.error);
+      const statusCode = error.data.error.status;
+
+      let m = alertsByErrorCode(statusCode);
+      alert(`${errorObject}\n\n${m}`);
+      location.href = '/';
+    }
   };
 
   const displayArtists = artists.map((artist, i) => {
@@ -96,55 +103,91 @@ export default function artist() {
     );
   });
 
-
-
   const createPlaylist = async () => {
     const accessToken = localStorage.getItem('accessToken');
     const headers = { Authorization: `Bearer ${accessToken}` };
 
-    // // user_idを取得
-    const endpoint = 'https://api.spotify.com/v1/me';
-    const user_id = await axios.get(endpoint, { headers }).then((res) => {
-      return res.data.id;
-    });
+    // TODO axiosで通信する部分をモジュール化する, libにまとめる。
+    try {
+      // user_idを取得
+      const endpoint = `${config.API_URL}/me`;
+      const user_id = await axios.get(endpoint, { headers })
+        .then((res) => {
+          return res.data.id;
+        })
+        .catch((error) => {
+          throw error.response;
+        });
 
-    // プレイリスト名、説明
-    const playlistsConfig = {
-      name: 'Playlists of your favorite artists',
-      description: 'Playlists of your favorite artists',
-      public: true,
-    };
+      // プレイリスト名、説明
+      const playlistsConfig = {
+        name: 'Playlists of your favorite artists',
+        description: 'Playlists of your favorite artists',
+        public: true,
+      };
 
-    // 空のplaylistを作成,idを取得
-    const playlistId = await axios
-      .post(`https://api.spotify.com/v1/users/${user_id}/playlists`, playlistsConfig, { headers })
-      .then((res) => {
-        return res.data.id;
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+      // 空のplaylistを作成,idを取得
+      const playlistId = await axios
+        .post(`${config.API_URL}/users/${user_id}/playlists`, playlistsConfig, {
+          headers,
+        })
+        .then((res) => {
+          return res.data.id;
+        })
+        .catch((error) => {
+          throw error.response;
+        });
 
-    const uris = await Promise.all(artists.map(async (artist) => {
-      const topTrackEndpoint = `https://api.spotify.com/v1/artists/${artist.id}/top-tracks?market=JP`;
-      return await axios.get(topTrackEndpoint, { headers })
-        .then((res) => res.data.tracks[0].uri);
-    }))
+      const uris = await Promise.all(
+        artists.map(async (artist) => {
+          const topTrackEndpoint = `${config.API_URL}/artists/${artist.id}/top-tracks?market=JP`;
+          return await axios
+            .get(topTrackEndpoint, { headers })
+            .then((res) => res.data.tracks[0].uri)
+            .catch((error) => {
+              throw error.response;
+            });
+        })
+        
+      );
 
-    // 曲のtrack uriを入れる
-    const tracks2 = { uris };
-    const responseStatus = await axios.post(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, tracks2, { headers })
-      .then((res) => {
-        return res.status;
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+      // 曲のtrack uriを入れる
+      const tracks2 = { uris };
+      const responseStatus = await axios
+        .post(`${config.API_URL}/playlists/${playlistId}/tracks`, tracks2, { headers })
+        .then((res) => {
+          return res.status;
+        })
+        .catch((error) => {
+          throw error.response;
+        });
 
-    if (responseStatus === 201) {
-      setFlag(true);
+      if (responseStatus === 201) {
+        setFlag(true);
+      }
+    } catch(error) {
+      const errorObject = JSON.stringify(error.data.error);
+      const statusCode = error.data.error.status;
+
+      let m = alertsByErrorCode(statusCode);
+      alert(`${errorObject}\n\n${m}`);
+      location.href = '/';
     }
   };
+
+  function alertsByErrorCode(status) {
+    const messagesByErrorCode = {
+      400: 'アプリケーションのエラーが起きています。管理者へお問い合わせください。',
+      401: 'アプリケーションのエラーが起きています。管理者へお問い合わせください。',
+      403: 'アプリケーションのエラーが起きています。管理者へお問い合わせください。',
+      404: 'アプリケーションのエラーが起きています。管理者へお問い合わせください。',
+      429: 'リクエストが多いため利用制限されています。時間をおいて再度お試しください。',
+      500: 'Spotifyのサーバーで障害が起きています。復旧までお待ちください。',
+      502: 'Spotifyのサーバーで障害が起きています。復旧までお待ちください。',
+      503: 'Spotifyのサーバーで一時的な障害が起きています。時間をおいて再度お試しください。',
+    };
+    return messagesByErrorCode[status];
+  }
 
   const closeModal = () => {
     setFlag(false);
