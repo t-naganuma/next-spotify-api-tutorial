@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import checkExpiration from '../lib/checkExpiration';
 import config from '../config';
-import spotifyApiModule from '../lib/spotifyApiModule';
+import {getUserId, getPlaylistId, createPlaylist} from '../lib/spotifyApiModule';
 import styles from '../styles/layout/Layout.module.scss';
 import contentStyles from '../styles/layout/Content.module.scss';
 import buttonStyles from '../styles/components/Button.module.scss';
@@ -36,6 +36,7 @@ const Modal = (props) => {
 export default function tracks() {
   const [tracks, setTracks] = useState([]);
   const [flag, setFlag] = useState(false);
+
   useEffect(() => {
     const getTracks = () => {
       try {
@@ -47,6 +48,7 @@ export default function tracks() {
 
         // Spotify ユーザーのTOP Tracks取得
         const endpoint = `${config.API_URL}/me/top/tracks`;
+        // const headers = { Authorization: `Bearer ${accessToken}` };
         const headers = { Authorization: `Bearer ${accessToken}` };
         axios
           .get(endpoint, { headers })
@@ -106,16 +108,23 @@ export default function tracks() {
     );
   });
 
-  const createPlaylist = async () => {
+  const createPlaylistHandler = async () => {
+    const accessToken = localStorage.getItem('accessToken');
+    const headers = { Authorization: `Bearer ${accessToken}` };
     try {
       // user_idを取得
-      const user_id = await spotifyApiModule.getUserId();
+      const user_id = await getUserId(headers);
       // // 空のplaylistを作成,idを取得
-      const playlistId = await spotifyApiModule.getPlaylistId(user_id);
+      const playlistsConfig = {
+        name: 'Playlists of your favorite tracks',
+        description: 'Playlists of your favorite tracks',
+        public: true,
+      };
+      const playlistId = await getPlaylistId(headers, playlistsConfig, user_id);
       const uris = tracks.map((track) => {return track.uri;});
-      // // 曲のtrack uriを入れる
+      // 曲のtrack uriを入れる
       const tracks_uri = { uris };
-      const responseStatus = await spotifyApiModule.createPlaylist(playlistId, tracks_uri);
+      const responseStatus = await createPlaylist(headers, playlistId, tracks_uri);
 
       if (responseStatus === 201) {
         setFlag(true);
@@ -174,7 +183,7 @@ export default function tracks() {
             <div className={contentStyles.create_playlists_inner}>
               <button
                 className={`${buttonStyles.button} ${buttonStyles.dark}`}
-                onClick={createPlaylist}>
+                onClick={createPlaylistHandler}>
                 Create Playlist
               </button>
             </div>

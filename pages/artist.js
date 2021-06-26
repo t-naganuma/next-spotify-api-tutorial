@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import checkExpiration from '../lib/checkExpiration';
 import config from '../config';
+import {getUserId, getPlaylistId, getArtistTrackUris, createPlaylist} from '../lib/spotifyApiModule';
 import styles from '../styles/layout/Layout.module.scss';
 import contentStyles from '../styles/layout/Content.module.scss';
 import buttonStyles from '../styles/components/Button.module.scss';
@@ -101,72 +102,38 @@ export default function artist() {
     );
   });
 
-  const createPlaylist = async () => {
+  const createPlaylistHandler = async () => {
     const accessToken = localStorage.getItem('accessToken');
     const headers = { Authorization: `Bearer ${accessToken}` };
 
     // TODO axiosで通信する部分をモジュール化する, libにまとめる。
     try {
       // user_idを取得
-      const endpoint = `${config.API_URL}/me`;
-      const user_id = await axios.get(endpoint, { headers })
-        .then((res) => {
-          return res.data.id;
-        })
-        .catch((error) => {
-          throw error.response;
-        });
-
+      const user_id = await getUserId(headers);
       // プレイリスト名、説明
       const playlistsConfig = {
         name: 'Playlists of your favorite artists',
         description: 'Playlists of your favorite artists',
         public: true,
       };
-
       // 空のplaylistを作成,idを取得
-      const playlistId = await axios
-        .post(`${config.API_URL}/users/${user_id}/playlists`, playlistsConfig, {
-          headers,
-        })
-        .then((res) => {
-          return res.data.id;
-        })
-        .catch((error) => {
-          throw error.response;
-        });
-
-      const uris = await Promise.all(
-        artists.map(async (artist) => {
-          const topTrackEndpoint = `${config.API_URL}/artists/${artist.id}/top-tracks?market=JP`;
-          return await axios
-            .get(topTrackEndpoint, { headers })
-            .then((res) => res.data.tracks[0].uri)
-            .catch((error) => {
-              throw error.response;
-            });
-        })
-        
-      );
+      const playlistId = await getPlaylistId(headers, playlistsConfig, user_id);
+      const uris = await getArtistTrackUris(headers, artists);
 
       // 曲のtrack uriを入れる
-      const tracks2 = { uris };
-      const responseStatus = await axios
-        .post(`${config.API_URL}/playlists/${playlistId}/tracks`, tracks2, { headers })
-        .then((res) => {
-          return res.status;
-        })
-        .catch((error) => {
-          throw error.response;
-        });
+      const tracks_uri = { uris };
+      const responseStatus = await createPlaylist(
+        headers,
+        playlistId,
+        tracks_uri
+      );
 
       if (responseStatus === 201) {
         setFlag(true);
       }
-    } catch(error) {
+    } catch (error) {
       const errorObject = JSON.stringify(error.data.error);
       const statusCode = error.data.error.status;
-
       let m = alertsByErrorCode(statusCode);
       alert(`${errorObject}\n\n${m}`);
       location.href = '/';
@@ -218,7 +185,7 @@ export default function artist() {
             <div className={contentStyles.create_playlists_inner}>
               <button
                 className={`${buttonStyles.button} ${buttonStyles.dark}`}
-                onClick={createPlaylist}>
+                onClick={createPlaylistHandler}>
                 Create Playlist
               </button>
             </div>
