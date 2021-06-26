@@ -34,7 +34,7 @@ const Header = (props) => {
     <header>
       <nav className={headerStyles.nav}>
         <div className={headerStyles.nav_container}>
-          <h1 className={headerStyles.heading1}>Top Artists</h1>
+          <h1 className={headerStyles.heading1}>{props.title}</h1>
           <div>
             <NavList currentPage={props.currentPage} />
           </div>
