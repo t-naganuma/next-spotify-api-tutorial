@@ -106,7 +106,6 @@ export default function artist() {
     const accessToken = localStorage.getItem('accessToken');
     const headers = { Authorization: `Bearer ${accessToken}` };
 
-    // TODO axiosで通信する部分をモジュール化する, libにまとめる。
     try {
       // user_idを取得
       const user_id = await getUserId(headers);
