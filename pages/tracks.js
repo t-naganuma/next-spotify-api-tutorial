@@ -8,6 +8,7 @@ import contentStyles from '../styles/layout/Content.module.scss';
 import buttonStyles from '../styles/components/Button.module.scss';
 import modalStyles from '../styles/components/Modal.module.scss';
 import Header from '../components/Header';
+import { SpotifyApi } from '../lib/SpotifyApi';
 
 const Modal = (props) => {
   if (!props.flag) return <></>;
@@ -78,10 +79,8 @@ export default function tracks() {
           throw 'アクセストークンを取得できていません';
         }
         checkExpiration();
-
         // Spotify ユーザーのTOP Tracks取得
         const endpoint = `${config.API_URL}/me/top/tracks`;
-        // const headers = { Authorization: `Bearer ${accessToken}` };
         const headers = { Authorization: `Bearer ${accessToken}` };
         axios
           .get(endpoint, { headers })
@@ -144,22 +143,13 @@ export default function tracks() {
   });
 
   const createPlaylistHandler = async () => {
-    const accessToken = localStorage.getItem('accessToken');
-    const headers = { Authorization: `Bearer ${accessToken}` };
+    const spotifyApi = new SpotifyApi();
     try {
-      // user_idを取得
-      const user_id = await getUserId(headers);
-      // // 空のplaylistを作成,idを取得
-      const playlistsConfig = {
-        name: 'Playlists of your favorite tracks',
-        description: 'Playlists of your favorite tracks',
-        public: true,
-      };
-      const playlistId = await getPlaylistId(headers, playlistsConfig, user_id);
+      await spotifyApi.getPlaylistId();
       const uris = tracks.map((track) => {return track.uri;});
       // 曲のtrack uriを入れる
       const tracks_uri = { uris };
-      const responseStatus = await createPlaylist(headers, playlistId, tracks_uri);
+      const responseStatus = await spotifyApi.createPlaylist(tracks_uri);
 
       if (responseStatus === 201) {
         setFlag(true);
