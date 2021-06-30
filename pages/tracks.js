@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import checkExpiration from '../lib/checkExpiration';
 import config from '../config';
@@ -36,6 +36,39 @@ const Modal = (props) => {
 export default function tracks() {
   const [tracks, setTracks] = useState([]);
   const [flag, setFlag] = useState(false);
+  const [deviceId, setDeviceId] = useState('');
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playingTrack, setPlayingTrack] = useState('');
+  const playerRef = useRef(null);
+
+  const spotifyWebPlayer = () => {
+    const accessToken = localStorage.getItem('accessToken');
+    window.onSpotifyWebPlaybackSDKReady = () => {
+      const player = new Spotify.Player({
+        name: 'Spellista Player',
+        getOAuthToken: (cb) => {
+          cb(accessToken);
+        },
+        volume: 0.2
+      });
+
+      player.addListener('ready', ({ device_id }) => {
+        // 楽曲再生に必要なdevice_idを取得しstateに格納する
+        setDeviceId(device_id);
+      });
+
+      player.connect();
+      playerRef.current = player;
+    };
+  };
+
+  const installWebPlayer = () => {
+    // Spotify Web Player SDK Install
+    const scriptTag = document.createElement('script');
+    scriptTag.src = 'https://sdk.scdn.co/spotify-player.js';
+    document.querySelector('body').appendChild(scriptTag);
+    spotifyWebPlayer();
+  };
 
   useEffect(() => {
     const getTracks = () => {
@@ -58,6 +91,8 @@ export default function tracks() {
           .catch((error) => {
             throw error.response.status;
           });
+
+        installWebPlayer();
       } catch (error) {
         if (error === 'アクセストークンを取得できていません') {
           alert(`サインインしていません。\nサインインしてください。`);
@@ -138,6 +173,29 @@ export default function tracks() {
     }
   };
 
+  const playbackTrack = async () => {
+    const accessToken = localStorage.getItem('accessToken');
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`,
+    };
+    const t = tracks[1];
+    if (playingTrack.id === t.id) {
+      playerRef.current.togglePlay();
+    } else {
+      setPlayingTrack(tracks[1]);
+      await axios
+        .put(
+          `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
+          { uris: [t.uri] },
+          { headers }
+        )
+        .then((res) => {
+          setIsPlaying(true);
+        });
+    }
+  }
+
   function alertsByErrorCode(status) {
     const messagesByErrorCode = {
       400: 'アプリケーションのエラーが起きています。管理者へお問い合わせください。',
@@ -178,6 +236,7 @@ export default function tracks() {
               All time
             </button>
           </div>
+          <button onClick={playbackTrack}>再生する</button>
           <ul>{displayTracks}</ul>
           <div className={contentStyles.create_playlists}>
             <div className={contentStyles.create_playlists_inner}>

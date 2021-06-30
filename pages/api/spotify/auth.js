@@ -14,7 +14,7 @@ const generateRandomString = (length) => {
 export default async (req, res) => {
   const params = new URLSearchParams();
   const scopes =
-    'user-read-private user-read-recently-played user-top-read playlist-modify-public playlist-modify-private streaming';
+    'user-read-private user-read-email user-read-recently-played user-top-read playlist-modify-public playlist-modify-private streaming';
   const state = generateRandomString(16);
   params.append('client_id', process.env.CLIENT_ID);
   params.append('response_type', 'code');
