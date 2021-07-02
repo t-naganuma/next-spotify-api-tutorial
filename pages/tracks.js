@@ -143,17 +143,19 @@ export default function tracks() {
   });
 
   const createPlaylistHandler = async () => {
-    const spotifyApi = new SpotifyApi();
     try {
-      await spotifyApi.getPlaylistId();
-      const uris = tracks.map((track) => {return track.uri;});
-      // 曲のtrack uriを入れる
-      const tracks_uri = { uris };
-      const responseStatus = await spotifyApi.createPlaylist(tracks_uri);
+      const spotifyAPI = new SpotifyApi();
 
-      if (responseStatus === 201) {
-        setFlag(true);
-      }
+      const playlistsConfig = {
+        name: 'Playlists of your favorite tracks',
+        description: 'Playlists of your favorite tracks',
+        public: true,
+      };
+      await spotifyAPI.getPlaylistId(playlistsConfig);
+
+      const tracks_uri = await spotifyAPI.getTopTrackUris(tracks);
+      const responseStatus = await spotifyAPI.createPlaylist(tracks_uri);
+      if (responseStatus === 201) setFlag(true);
     } catch (error) {
       const errorObject = JSON.stringify(error.data.error);
       const statusCode = error.data.error.status;

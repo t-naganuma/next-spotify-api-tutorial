@@ -8,6 +8,7 @@ import contentStyles from '../styles/layout/Content.module.scss';
 import buttonStyles from '../styles/components/Button.module.scss';
 import modalStyles from '../styles/components/Modal.module.scss';
 import Header from '../components/Header';
+import { SpotifyApi } from '../lib/SpotifyApi';
 
 const Modal = (props) => {
   if (!props.flag) return <></>;
@@ -103,33 +104,19 @@ export default function artist() {
   });
 
   const createPlaylistHandler = async () => {
-    const accessToken = localStorage.getItem('accessToken');
-    const headers = { Authorization: `Bearer ${accessToken}` };
-
     try {
-      // user_idを取得
-      const user_id = await getUserId(headers);
-      // プレイリスト名、説明
+      const spotifyAPI = new SpotifyApi();
+
       const playlistsConfig = {
         name: 'Playlists of your favorite artists',
         description: 'Playlists of your favorite artists',
         public: true,
       };
-      // 空のplaylistを作成,idを取得
-      const playlistId = await getPlaylistId(headers, playlistsConfig, user_id);
-      const uris = await getArtistTrackUris(headers, artists);
+      await spotifyAPI.getPlaylistId(playlistsConfig);
 
-      // 曲のtrack uriを入れる
-      const tracks_uri = { uris };
-      const responseStatus = await createPlaylist(
-        headers,
-        playlistId,
-        tracks_uri
-      );
-
-      if (responseStatus === 201) {
-        setFlag(true);
-      }
+      const tracks_uri = await spotifyAPI.getArtistTrackUris(artists);
+      const responseStatus = await spotifyAPI.createPlaylist(tracks_uri);
+      if (responseStatus === 201) setFlag(true);
     } catch (error) {
       const errorObject = JSON.stringify(error.data.error);
       const statusCode = error.data.error.status;
