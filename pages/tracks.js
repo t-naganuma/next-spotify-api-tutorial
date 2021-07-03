@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
+import Image from 'next/image';
 import axios from 'axios';
 import checkExpiration from '../lib/checkExpiration';
 import config from '../config';
-import {getUserId, getPlaylistId, createPlaylist} from '../lib/spotifyApiModule';
 import styles from '../styles/layout/Layout.module.scss';
 import contentStyles from '../styles/layout/Content.module.scss';
 import buttonStyles from '../styles/components/Button.module.scss';
@@ -138,6 +138,14 @@ export default function tracks() {
           <p className={contentStyles.content_name}>{track.name}</p>
           <p className={contentStyles.genre_info}>{track.artists[0].name}</p>
         </span>
+        <button className={buttonStyles.play_icon} onClick={() => playbackTrack(track)}>
+          <Image
+            src={playingTrack.id === track.id ? '/stop.png' : '/play.png'}
+            alt="再生する"
+            width={30}
+            height={30}
+          />
+        </button>
       </li>
     );
   });
@@ -165,26 +173,30 @@ export default function tracks() {
     }
   };
 
-  const playbackTrack = async () => {
-    const accessToken = localStorage.getItem('accessToken');
-    const headers = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    };
-    const t = tracks[1];
-    if (playingTrack.id === t.id) {
-      playerRef.current.togglePlay();
-    } else {
-      setPlayingTrack(tracks[1]);
-      await axios
-        .put(
-          `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
-          { uris: [t.uri] },
-          { headers }
-        )
-        .then((res) => {
-          setIsPlaying(true);
-        });
+  const playbackTrack = async (track) => {
+    /**
+     * useState
+     * tracks, deviceId, playingTrack
+     */
+    try {
+      const spotifyAPI = new SpotifyApi();
+      if (playingTrack.id === track.id) {
+        // 再生中の曲と再生ボタンを押した曲が同じならtogglePlayに。
+        playerRef.current.togglePlay();
+      } else {
+        // 再生中の曲を格納
+        setPlayingTrack(track);
+        // status codeを取得、再生している状態を格納
+        const statusCode = await spotifyAPI.playTrack(deviceId, track);
+        if (statusCode === 204) setIsPlaying(true);
+      }
+    } catch(error) {
+      console.error(error)
+      const errorObject = JSON.stringify(error.data.error);
+      const statusCode = error.data.error.status;
+      let m = alertsByErrorCode(statusCode);
+      alert(`${errorObject}\n\n${m}`);
+      location.href = '/';
     }
   }
 
@@ -228,7 +240,7 @@ export default function tracks() {
               All time
             </button>
           </div>
-          <button onClick={playbackTrack}>再生する</button>
+          
           <ul>{displayTracks}</ul>
           <div className={contentStyles.create_playlists}>
             <div className={contentStyles.create_playlists_inner}>
