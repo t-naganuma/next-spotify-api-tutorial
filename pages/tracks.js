@@ -140,7 +140,7 @@ export default function tracks() {
         </span>
         <button className={buttonStyles.play_icon} onClick={() => playbackTrack(track)}>
           <Image
-            src={playingTrack.id === track.id ? '/stop.png' : '/play.png'}
+            src={playingTrack === track ? '/stop.png' : '/play.png'}
             alt="再生する"
             width={30}
             height={30}
@@ -180,9 +180,16 @@ export default function tracks() {
      */
     try {
       const spotifyAPI = new SpotifyApi();
-      if (playingTrack.id === track.id) {
+      if (playingTrack && playingTrack.id === track.id) {
         // 再生中の曲と再生ボタンを押した曲が同じならtogglePlayに。
         playerRef.current.togglePlay();
+
+        playerRef.current.getCurrentState().then((state) => {
+          if (!state.paused) {
+            setPlayingTrack(null);
+          }
+        });
+        
       } else {
         // 再生中の曲を格納
         setPlayingTrack(track);
