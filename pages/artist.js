@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import checkExpiration from '../lib/checkExpiration';
 import config from '../config';
-import {getUserId, getPlaylistId, getArtistTrackUris, createPlaylist} from '../lib/spotifyApiModule';
 import styles from '../styles/layout/Layout.module.scss';
 import contentStyles from '../styles/layout/Content.module.scss';
 import buttonStyles from '../styles/components/Button.module.scss';
@@ -34,6 +33,7 @@ const Modal = (props) => {
 export default function artist() {
   const [artists, setArtists] = useState([]);
   const [flag, setFlag] = useState(false);
+
   useEffect(() => {
     const getArtist = () => {
       try {
@@ -53,7 +53,6 @@ export default function artist() {
           .catch((error) => {
             throw error.response.status;
           });
-          
       } catch(error) {
         if (error === 'アクセストークンを取得できていません') {
           alert(`サインインしていません。\nサインインしてください。`);

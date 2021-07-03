@@ -189,7 +189,7 @@ export default function tracks() {
             setPlayingTrack(null);
           }
         });
-        
+
       } else {
         // 再生中の曲を格納
         setPlayingTrack(track);
@@ -198,9 +198,8 @@ export default function tracks() {
         if (statusCode === 204) setIsPlaying(true);
       }
     } catch(error) {
-      console.error(error)
       const errorObject = JSON.stringify(error.data.error);
-      const statusCode = error.data.error.status;
+      const statusCode = error.status;
       let m = alertsByErrorCode(statusCode);
       alert(`${errorObject}\n\n${m}`);
       location.href = '/';
