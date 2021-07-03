@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import checkExpiration from '../lib/checkExpiration';
 import config from '../config';
-import {getUserId, getPlaylistId, getArtistTrackUris, createPlaylist} from '../lib/spotifyApiModule';
 import styles from '../styles/layout/Layout.module.scss';
 import contentStyles from '../styles/layout/Content.module.scss';
 import buttonStyles from '../styles/components/Button.module.scss';
 import modalStyles from '../styles/components/Modal.module.scss';
 import Header from '../components/Header';
+import { SpotifyApi } from '../lib/SpotifyApi';
 
 const Modal = (props) => {
   if (!props.flag) return <></>;
@@ -33,6 +33,7 @@ const Modal = (props) => {
 export default function artist() {
   const [artists, setArtists] = useState([]);
   const [flag, setFlag] = useState(false);
+
   useEffect(() => {
     const getArtist = () => {
       try {
@@ -52,7 +53,6 @@ export default function artist() {
           .catch((error) => {
             throw error.response.status;
           });
-          
       } catch(error) {
         if (error === 'アクセストークンを取得できていません') {
           alert(`サインインしていません。\nサインインしてください。`);
@@ -103,33 +103,19 @@ export default function artist() {
   });
 
   const createPlaylistHandler = async () => {
-    const accessToken = localStorage.getItem('accessToken');
-    const headers = { Authorization: `Bearer ${accessToken}` };
-
     try {
-      // user_idを取得
-      const user_id = await getUserId(headers);
-      // プレイリスト名、説明
+      const spotifyAPI = new SpotifyApi();
+
       const playlistsConfig = {
         name: 'Playlists of your favorite artists',
         description: 'Playlists of your favorite artists',
         public: true,
       };
-      // 空のplaylistを作成,idを取得
-      const playlistId = await getPlaylistId(headers, playlistsConfig, user_id);
-      const uris = await getArtistTrackUris(headers, artists);
+      await spotifyAPI.getPlaylistId(playlistsConfig);
 
-      // 曲のtrack uriを入れる
-      const tracks_uri = { uris };
-      const responseStatus = await createPlaylist(
-        headers,
-        playlistId,
-        tracks_uri
-      );
-
-      if (responseStatus === 201) {
-        setFlag(true);
-      }
+      const tracks_uri = await spotifyAPI.getArtistTrackUris(artists);
+      const responseStatus = await spotifyAPI.createPlaylist(tracks_uri);
+      if (responseStatus === 201) setFlag(true);
     } catch (error) {
       const errorObject = JSON.stringify(error.data.error);
       const statusCode = error.data.error.status;
@@ -142,7 +128,7 @@ export default function artist() {
   function alertsByErrorCode(status) {
     const messagesByErrorCode = {
       400: 'アプリケーションのエラーが起きています。管理者へお問い合わせください。',
-      401: 'アプリケーションのエラーが起きています。管理者へお問い合わせください。',
+      401: 'アクセス権限がありません。ログインしてください。',
       403: 'アプリケーションのエラーが起きています。管理者へお問い合わせください。',
       404: 'アプリケーションのエラーが起きています。管理者へお問い合わせください。',
       429: 'リクエストが多いため利用制限されています。時間をおいて再度お試しください。',

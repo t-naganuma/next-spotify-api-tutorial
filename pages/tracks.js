@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import Image from 'next/image';
 import axios from 'axios';
 import checkExpiration from '../lib/checkExpiration';
 import config from '../config';
-import {getUserId, getPlaylistId, createPlaylist} from '../lib/spotifyApiModule';
 import styles from '../styles/layout/Layout.module.scss';
 import contentStyles from '../styles/layout/Content.module.scss';
 import buttonStyles from '../styles/components/Button.module.scss';
 import modalStyles from '../styles/components/Modal.module.scss';
 import Header from '../components/Header';
+import { SpotifyApi } from '../lib/SpotifyApi';
 
 const Modal = (props) => {
   if (!props.flag) return <></>;
@@ -36,6 +37,39 @@ const Modal = (props) => {
 export default function tracks() {
   const [tracks, setTracks] = useState([]);
   const [flag, setFlag] = useState(false);
+  const [deviceId, setDeviceId] = useState('');
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playingTrack, setPlayingTrack] = useState('');
+  const playerRef = useRef(null);
+
+  const spotifyWebPlayer = () => {
+    const accessToken = localStorage.getItem('accessToken');
+    window.onSpotifyWebPlaybackSDKReady = () => {
+      const player = new Spotify.Player({
+        name: 'Spellista Player',
+        getOAuthToken: (cb) => {
+          cb(accessToken);
+        },
+        volume: 0.2
+      });
+
+      player.addListener('ready', ({ device_id }) => {
+        // 楽曲再生に必要なdevice_idを取得しstateに格納する
+        setDeviceId(device_id);
+      });
+
+      player.connect();
+      playerRef.current = player;
+    };
+  };
+
+  const installWebPlayer = () => {
+    // Spotify Web Player SDK Install
+    const scriptTag = document.createElement('script');
+    scriptTag.src = 'https://sdk.scdn.co/spotify-player.js';
+    document.querySelector('body').appendChild(scriptTag);
+    spotifyWebPlayer();
+  };
 
   useEffect(() => {
     const getTracks = () => {
@@ -45,10 +79,8 @@ export default function tracks() {
           throw 'アクセストークンを取得できていません';
         }
         checkExpiration();
-
         // Spotify ユーザーのTOP Tracks取得
         const endpoint = `${config.API_URL}/me/top/tracks`;
-        // const headers = { Authorization: `Bearer ${accessToken}` };
         const headers = { Authorization: `Bearer ${accessToken}` };
         axios
           .get(endpoint, { headers })
@@ -58,6 +90,8 @@ export default function tracks() {
           .catch((error) => {
             throw error.response.status;
           });
+
+        installWebPlayer();
       } catch (error) {
         if (error === 'アクセストークンを取得できていません') {
           alert(`サインインしていません。\nサインインしてください。`);
@@ -104,31 +138,32 @@ export default function tracks() {
           <p className={contentStyles.content_name}>{track.name}</p>
           <p className={contentStyles.genre_info}>{track.artists[0].name}</p>
         </span>
+        <button className={buttonStyles.play_icon} onClick={() => playbackTrack(track)}>
+          <Image
+            src={playingTrack === track ? '/stop.png' : '/play.png'}
+            alt="再生する"
+            width={30}
+            height={30}
+          />
+        </button>
       </li>
     );
   });
 
   const createPlaylistHandler = async () => {
-    const accessToken = localStorage.getItem('accessToken');
-    const headers = { Authorization: `Bearer ${accessToken}` };
     try {
-      // user_idを取得
-      const user_id = await getUserId(headers);
-      // // 空のplaylistを作成,idを取得
+      const spotifyAPI = new SpotifyApi();
+
       const playlistsConfig = {
         name: 'Playlists of your favorite tracks',
         description: 'Playlists of your favorite tracks',
         public: true,
       };
-      const playlistId = await getPlaylistId(headers, playlistsConfig, user_id);
-      const uris = tracks.map((track) => {return track.uri;});
-      // 曲のtrack uriを入れる
-      const tracks_uri = { uris };
-      const responseStatus = await createPlaylist(headers, playlistId, tracks_uri);
+      await spotifyAPI.getPlaylistId(playlistsConfig);
 
-      if (responseStatus === 201) {
-        setFlag(true);
-      }
+      const tracks_uri = await spotifyAPI.getTopTrackUris(tracks);
+      const responseStatus = await spotifyAPI.createPlaylist(tracks_uri);
+      if (responseStatus === 201) setFlag(true);
     } catch (error) {
       const errorObject = JSON.stringify(error.data.error);
       const statusCode = error.data.error.status;
@@ -138,10 +173,43 @@ export default function tracks() {
     }
   };
 
+  const playbackTrack = async (track) => {
+    /**
+     * useState
+     * tracks, deviceId, playingTrack
+     */
+    try {
+      const spotifyAPI = new SpotifyApi();
+      if (playingTrack && playingTrack.id === track.id) {
+        // 再生中の曲と再生ボタンを押した曲が同じならtogglePlayに。
+        playerRef.current.togglePlay();
+
+        playerRef.current.getCurrentState().then((state) => {
+          if (!state.paused) {
+            setPlayingTrack(null);
+          }
+        });
+
+      } else {
+        // 再生中の曲を格納
+        setPlayingTrack(track);
+        // status codeを取得、再生している状態を格納
+        const statusCode = await spotifyAPI.playTrack(deviceId, track);
+        if (statusCode === 204) setIsPlaying(true);
+      }
+    } catch(error) {
+      const errorObject = JSON.stringify(error.data.error);
+      const statusCode = error.status;
+      let m = alertsByErrorCode(statusCode);
+      alert(`${errorObject}\n\n${m}`);
+      location.href = '/';
+    }
+  }
+
   function alertsByErrorCode(status) {
     const messagesByErrorCode = {
       400: 'アプリケーションのエラーが起きています。管理者へお問い合わせください。',
-      401: 'アプリケーションのエラーが起きています。管理者へお問い合わせください。',
+      401: 'アクセス権限がありません。ログインしてください。',
       403: 'アプリケーションのエラーが起きています。管理者へお問い合わせください。',
       404: 'アプリケーションのエラーが起きています。管理者へお問い合わせください。',
       429: 'リクエストが多いため利用制限されています。時間をおいて再度お試しください。',
@@ -178,6 +246,7 @@ export default function tracks() {
               All time
             </button>
           </div>
+          
           <ul>{displayTracks}</ul>
           <div className={contentStyles.create_playlists}>
             <div className={contentStyles.create_playlists_inner}>
