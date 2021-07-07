@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import Image from 'next/image';
 import axios from 'axios';
 import checkExpiration from '../lib/checkExpiration';
 import config from '../config';
@@ -14,14 +15,17 @@ const Modal = (props) => {
 
   const handleCloseModal = () => {
     props.closeModal();
-  }
+  };
 
   return (
     <div className={`${modalStyles.modal} ${modalStyles.is_show}`}>
       <div className={modalStyles.body}>
         <p className={modalStyles.text}>プレイリストを作成しました！</p>
         <div className={modalStyles.button_area}>
-          <button type="button" onClick={handleCloseModal} className={modalStyles.close}>
+          <button
+            type="button"
+            onClick={handleCloseModal}
+            className={modalStyles.close}>
             閉じる
           </button>
         </div>
@@ -30,52 +34,88 @@ const Modal = (props) => {
   );
 };
 
-export default function artist() {
-  const [artists, setArtists] = useState([]);
+export default function tracks() {
+  const [tracks, setTracks] = useState([]);
   const [flag, setFlag] = useState(false);
+  const [deviceId, setDeviceId] = useState('');
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playingTrack, setPlayingTrack] = useState('');
+  const playerRef = useRef(null);
+
+  const spotifyWebPlayer = () => {
+    const accessToken = localStorage.getItem('accessToken');
+    window.onSpotifyWebPlaybackSDKReady = () => {
+      const player = new Spotify.Player({
+        name: 'Spellista Player',
+        getOAuthToken: (cb) => {
+          cb(accessToken);
+        },
+        volume: 0.2
+      });
+
+      player.addListener('ready', ({ device_id }) => {
+        // 楽曲再生に必要なdevice_idを取得しstateに格納する
+        setDeviceId(device_id);
+      });
+
+      player.connect();
+      playerRef.current = player;
+    };
+  };
+
+  const installWebPlayer = () => {
+    // Spotify Web Player SDK Install
+    const scriptTag = document.createElement('script');
+    scriptTag.src = 'https://sdk.scdn.co/spotify-player.js';
+    document.querySelector('body').appendChild(scriptTag);
+    spotifyWebPlayer();
+  };
 
   useEffect(() => {
-    const getArtist = () => {
+    const getTracks = () => {
       try {
         const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) {
           throw 'アクセストークンを取得できていません';
         }
         checkExpiration();
-
-        // Spotify ユーザーのTOP Artist取得
-        const endpoint = `${config.API_URL}/me/top/artists`;
+        // Spotify ユーザーのTOP Tracks取得
+        const endpoint = `${config.API_URL}/me/top/tracks`;
         const headers = { Authorization: `Bearer ${accessToken}` };
-        axios.get(endpoint, { headers })
+        axios
+          .get(endpoint, { headers })
           .then((res) => {
-            setArtists(res.data.items);
+            setTracks(res.data.items);
           })
           .catch((error) => {
             throw error.response.status;
           });
-      } catch(error) {
+
+        installWebPlayer();
+      } catch (error) {
         if (error === 'アクセストークンを取得できていません') {
           alert(`サインインしていません。\nサインインしてください。`);
           location.href = '/';
         }
       }
-    }
-    getArtist();
+    };
+    getTracks();
   }, []);
 
-  const getArtistByTerm = (term) => {
+  const getTrackByTerm = (term) => {
     const accessToken = localStorage.getItem('accessToken');
-    const endpoint = `${config.API_URL}/me/top/artists?time_range=${term}`;
+    const endpoint = `${config.API_URL}/me/top/tracks?time_range=${term}`;
     const headers = { Authorization: `Bearer ${accessToken}` };
     try {
-      axios.get(endpoint, { headers })
+      axios
+        .get(endpoint, { headers })
         .then((res) => {
-          setArtists(res.data.items);
+          setTracks(res.data.items);
         })
         .catch((error) => {
           throw error.response;
         });
-    } catch(error) {
+    } catch (error) {
       const errorObject = JSON.stringify(error.data.error);
       const statusCode = error.data.error.status;
 
@@ -85,19 +125,27 @@ export default function artist() {
     }
   };
 
-  const displayArtists = artists.map((artist, i) => {
+  const displayTracks = tracks.map((track, i) => {
     return (
-      <li key={artist.id} className={contentStyles.list}>
+      <li key={track.id} className={contentStyles.list}>
         <span className={contentStyles.order_number}>{i + 1}</span>
         <img
           className={contentStyles.img}
-          src={artist.images[1].url}
-          alt={artist.name}
+          src={track.album.images[1].url}
+          alt={track.name}
         />
         <span className={contentStyles.music_info}>
-          <p className={contentStyles.content_name}>{artist.name}</p>
-          <p className={contentStyles.genre_info}>{artist.genres}</p>
+          <p className={contentStyles.content_name}>{track.name}</p>
+          <p className={contentStyles.genre_info}>{track.artists[0].name}</p>
         </span>
+        <button className={buttonStyles.play_icon} onClick={() => playbackTrack(track)}>
+          <Image
+            src={playingTrack === track ? '/stop.png' : '/play.png'}
+            alt="再生する"
+            width={30}
+            height={30}
+          />
+        </button>
       </li>
     );
   });
@@ -107,13 +155,13 @@ export default function artist() {
       const spotifyAPI = new SpotifyApi();
 
       const playlistsConfig = {
-        name: 'Playlists of your favorite artists',
-        description: 'Playlists of your favorite artists',
+        name: 'Playlists of your favorite tracks',
+        description: 'Playlists of your favorite tracks',
         public: true,
       };
       await spotifyAPI.getPlaylistId(playlistsConfig);
 
-      const tracks_uri = await spotifyAPI.getArtistTrackUris(artists);
+      const tracks_uri = await spotifyAPI.getTopTrackUris(tracks);
       const responseStatus = await spotifyAPI.createPlaylist(tracks_uri);
       if (responseStatus === 201) setFlag(true);
     } catch (error) {
@@ -124,6 +172,39 @@ export default function artist() {
       location.href = '/';
     }
   };
+
+  const playbackTrack = async (track) => {
+    /**
+     * useState
+     * tracks, deviceId, playingTrack
+     */
+    try {
+      const spotifyAPI = new SpotifyApi();
+      if (playingTrack && playingTrack.id === track.id) {
+        // 再生中の曲と再生ボタンを押した曲が同じならtogglePlayに。
+        playerRef.current.togglePlay();
+
+        playerRef.current.getCurrentState().then((state) => {
+          if (!state.paused) {
+            setPlayingTrack(null);
+          }
+        });
+
+      } else {
+        // 再生中の曲を格納
+        setPlayingTrack(track);
+        // status codeを取得、再生している状態を格納
+        const statusCode = await spotifyAPI.playTrack(deviceId, track);
+        if (statusCode === 204) setIsPlaying(true);
+      }
+    } catch(error) {
+      const errorObject = JSON.stringify(error.data.error);
+      const statusCode = error.status;
+      let m = alertsByErrorCode(statusCode);
+      alert(`${errorObject}\n\n${m}`);
+      location.href = '/';
+    }
+  }
 
   function alertsByErrorCode(status) {
     const messagesByErrorCode = {
@@ -141,31 +222,32 @@ export default function artist() {
 
   const closeModal = () => {
     setFlag(false);
-  }
+  };
 
   return (
     <div className={styles.container}>
-      <Header currentPage={'artist'} title={'Top Artists'} />
+      <Header currentPage={'tracks'} title={'Top Tracks'} />
       <main className={styles.main}>
         <section className={contentStyles.sec_contents}>
           <div className={contentStyles.time_range_selector}>
             <button
               className={`${buttonStyles.button} ${buttonStyles.blue}`}
-              onClick={() => getArtistByTerm('short_term')}>
+              onClick={() => getTrackByTerm('short_term')}>
               Last month
             </button>
             <button
               className={`${buttonStyles.button} ${buttonStyles.blue}`}
-              onClick={() => getArtistByTerm('medium_term')}>
+              onClick={() => getTrackByTerm('medium_term')}>
               Last 6 month
             </button>
             <button
               className={`${buttonStyles.button} ${buttonStyles.blue}`}
-              onClick={() => getArtistByTerm('long_term')}>
+              onClick={() => getTrackByTerm('long_term')}>
               All time
             </button>
           </div>
-          <ul>{displayArtists}</ul>
+          
+          <ul>{displayTracks}</ul>
           <div className={contentStyles.create_playlists}>
             <div className={contentStyles.create_playlists_inner}>
               <button
