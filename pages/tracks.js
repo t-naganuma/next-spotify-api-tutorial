@@ -1,8 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
-import axios from 'axios';
 import checkExpiration from '../lib/checkExpiration';
-import config from '../config';
 import styles from '../styles/layout/Layout.module.scss';
 import contentStyles from '../styles/layout/Content.module.scss';
 import buttonStyles from '../styles/components/Button.module.scss';
@@ -73,7 +71,9 @@ export default function tracks() {
   };
 
   useEffect(() => {
-    const getTracks = () => {
+    spotifyAPI.current = new SpotifyApi();
+
+    const getTracks = async () => {
       try {
         const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) {
@@ -81,17 +81,8 @@ export default function tracks() {
         }
         checkExpiration();
         // Spotify ユーザーのTOP Tracks取得
-        const endpoint = `${config.API_URL}/me/top/tracks`;
-        const headers = { Authorization: `Bearer ${accessToken}` };
-        axios
-          .get(endpoint, { headers })
-          .then((res) => {
-            setTracks(res.data.items);
-          })
-          .catch((error) => {
-            throw error.response.status;
-          });
-
+        const topTracks = await spotifyAPI.current.getTopTracksByUser();
+        setTracks(topTracks);
         installWebPlayer();
       } catch (error) {
         if (error === 'アクセストークンを取得できていません') {
@@ -101,7 +92,6 @@ export default function tracks() {
       }
     };
     getTracks();
-    spotifyAPI.current = new SpotifyApi();
   }, []);
 
   const getTrackByTerm = async (term) => {
