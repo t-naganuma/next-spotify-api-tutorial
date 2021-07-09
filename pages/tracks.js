@@ -41,6 +41,7 @@ export default function tracks() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [playingTrack, setPlayingTrack] = useState('');
   const playerRef = useRef(null);
+  const spotifyAPI = useRef(null);
 
   const spotifyWebPlayer = () => {
     const accessToken = localStorage.getItem('accessToken');
@@ -94,32 +95,24 @@ export default function tracks() {
         installWebPlayer();
       } catch (error) {
         if (error === 'アクセストークンを取得できていません') {
-          alert(`サインインしていません。\nサインインしてください。`);
+          alert(`サインインしてください。`);
           location.href = '/';
         }
       }
     };
     getTracks();
+    spotifyAPI.current = new SpotifyApi();
   }, []);
 
-  const getTrackByTerm = (term) => {
-    const accessToken = localStorage.getItem('accessToken');
-    const endpoint = `${config.API_URL}/me/top/tracks?time_range=${term}`;
-    const headers = { Authorization: `Bearer ${accessToken}` };
+  const getTrackByTerm = async (term) => {
     try {
-      axios
-        .get(endpoint, { headers })
-        .then((res) => {
-          setTracks(res.data.items);
-        })
-        .catch((error) => {
-          throw error.response;
-        });
+      const data = await spotifyAPI.current.getDataByTerm(term, 'tracks');
+      setTracks(data.items);
     } catch (error) {
       const errorObject = JSON.stringify(error.data.error);
       const statusCode = error.data.error.status;
 
-      let m = alertsByErrorCode(statusCode);
+      const m = alertsByErrorCode(statusCode);
       alert(`${errorObject}\n\n${m}`);
       location.href = '/';
     }
@@ -152,17 +145,15 @@ export default function tracks() {
 
   const createPlaylistHandler = async () => {
     try {
-      const spotifyAPI = new SpotifyApi();
-
       const playlistsConfig = {
         name: 'Playlists of your favorite tracks',
         description: 'Playlists of your favorite tracks',
         public: true,
       };
-      await spotifyAPI.getPlaylistId(playlistsConfig);
+      await spotifyAPI.current.getPlaylistId(playlistsConfig);
 
-      const tracks_uri = await spotifyAPI.getTopTrackUris(tracks);
-      const responseStatus = await spotifyAPI.createPlaylist(tracks_uri);
+      const tracks_uri = await spotifyAPI.current.getTopTrackUris(tracks);
+      const responseStatus = await spotifyAPI.current.createPlaylist(tracks_uri);
       if (responseStatus === 201) setFlag(true);
     } catch (error) {
       const errorObject = JSON.stringify(error.data.error);
@@ -179,7 +170,6 @@ export default function tracks() {
      * tracks, deviceId, playingTrack
      */
     try {
-      const spotifyAPI = new SpotifyApi();
       if (playingTrack && playingTrack.id === track.id) {
         // 再生中の曲と再生ボタンを押した曲が同じならtogglePlayに。
         playerRef.current.togglePlay();
@@ -194,7 +184,7 @@ export default function tracks() {
         // 再生中の曲を格納
         setPlayingTrack(track);
         // status codeを取得、再生している状態を格納
-        const statusCode = await spotifyAPI.playTrack(deviceId, track);
+        const statusCode = await spotifyAPI.current.playTrack(deviceId, track);
         if (statusCode === 204) setIsPlaying(true);
       }
     } catch(error) {

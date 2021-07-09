@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import checkExpiration from '../lib/checkExpiration';
 import config from '../config';
@@ -33,6 +33,7 @@ const Modal = (props) => {
 export default function artist() {
   const [artists, setArtists] = useState([]);
   const [flag, setFlag] = useState(false);
+  const spotifyAPI = useRef(null);
 
   useEffect(() => {
     const getArtist = () => {
@@ -55,26 +56,19 @@ export default function artist() {
           });
       } catch(error) {
         if (error === 'アクセストークンを取得できていません') {
-          alert(`サインインしていません。\nサインインしてください。`);
+          alert(`サインインしてください。`);
           location.href = '/';
         }
       }
     }
     getArtist();
+    spotifyAPI.current = new SpotifyApi();
   }, []);
 
-  const getArtistByTerm = (term) => {
-    const accessToken = localStorage.getItem('accessToken');
-    const endpoint = `${config.API_URL}/me/top/artists?time_range=${term}`;
-    const headers = { Authorization: `Bearer ${accessToken}` };
+  const getArtistByTerm = async (term) => {
     try {
-      axios.get(endpoint, { headers })
-        .then((res) => {
-          setArtists(res.data.items);
-        })
-        .catch((error) => {
-          throw error.response;
-        });
+      const data = await spotifyAPI.current.getDataByTerm(term, 'artists');
+      setArtists(data.items);
     } catch(error) {
       const errorObject = JSON.stringify(error.data.error);
       const statusCode = error.data.error.status;
@@ -104,17 +98,16 @@ export default function artist() {
 
   const createPlaylistHandler = async () => {
     try {
-      const spotifyAPI = new SpotifyApi();
 
       const playlistsConfig = {
         name: 'Playlists of your favorite artists',
         description: 'Playlists of your favorite artists',
         public: true,
       };
-      await spotifyAPI.getPlaylistId(playlistsConfig);
+      await spotifyAPI.current.getPlaylistId(playlistsConfig);
 
-      const tracks_uri = await spotifyAPI.getArtistTrackUris(artists);
-      const responseStatus = await spotifyAPI.createPlaylist(tracks_uri);
+      const tracks_uri = await spotifyAPI.current.getArtistTrackUris(artists);
+      const responseStatus = await spotifyAPI.current.createPlaylist(tracks_uri);
       if (responseStatus === 201) setFlag(true);
     } catch (error) {
       const errorObject = JSON.stringify(error.data.error);
