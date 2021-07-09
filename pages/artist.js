@@ -3,30 +3,9 @@ import checkExpiration from '../lib/checkExpiration';
 import styles from '../styles/layout/Layout.module.scss';
 import contentStyles from '../styles/layout/Content.module.scss';
 import buttonStyles from '../styles/components/Button.module.scss';
-import modalStyles from '../styles/components/Modal.module.scss';
 import Header from '../components/Header';
+import Modal from '../components/Modal';
 import { SpotifyApi } from '../lib/SpotifyApi';
-
-const Modal = (props) => {
-  if (!props.flag) return <></>;
-
-  const handleCloseModal = () => {
-    props.closeModal();
-  }
-
-  return (
-    <div className={`${modalStyles.modal} ${modalStyles.is_show}`}>
-      <div className={modalStyles.body}>
-        <p className={modalStyles.text}>プレイリストを作成しました！</p>
-        <div className={modalStyles.button_area}>
-          <button type="button" onClick={handleCloseModal} className={modalStyles.close}>
-            閉じる
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 export default function artist() {
   const [artists, setArtists] = useState([]);
