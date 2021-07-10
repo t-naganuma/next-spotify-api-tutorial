@@ -16,60 +16,34 @@ export default function artist() {
     spotifyAPI.current = new SpotifyApi();
 
     const getArtist = async () => {
-      try {
-        const accessToken = localStorage.getItem('accessToken');
-        if (!accessToken) {
-          throw 'アクセストークンを取得できていません';
-        }
-        checkExpiration();
-
-        // Spotify ユーザーのTOP Artist取得
-        const topArtists = await spotifyAPI.current.getTopArtistsByUser();
-        setArtists(topArtists);
-      } catch(error) {
-        if (error === 'アクセストークンを取得できていません') {
-          alert(`サインインしてください。`);
-          location.href = '/';
-        }
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+        throw 'アクセストークンを取得できていません';
       }
+      checkExpiration();
+
+      // Spotify ユーザーのTOP Artist取得
+      const response = await spotifyAPI.current.getTopArtistsByUser();
+      if (response.error) {
+        alert(
+          `サインインしてください。\n${response.error.status} ${response.error.message}`
+        );
+        location.href = '/';
+        return;
+      }
+      setArtists(response);
     }
     getArtist();
   }, []);
 
   const getArtistByTerm = async (term) => {
-    try {
-      const data = await spotifyAPI.current.getDataByTerm(term, 'artists');
-      setArtists(data.items);
-    } catch(error) {
-      const errorObject = JSON.stringify(error.data.error);
-      const statusCode = error.data.error.status;
-
-      let m = alertsByErrorCode(statusCode);
-      alert(`${errorObject}\n\n${m}`);
-      location.href = '/';
-    }
+    const response = await spotifyAPI.current.getDataByTerm(term, 'artists');
+    if (response.error) return;
+    setArtists(response.items);
   };
-
-  const displayArtists = artists.map((artist, i) => {
-    return (
-      <li key={artist.id} className={contentStyles.list}>
-        <span className={contentStyles.order_number}>{i + 1}</span>
-        <img
-          className={contentStyles.img}
-          src={artist.images[1].url}
-          alt={artist.name}
-        />
-        <span className={contentStyles.music_info}>
-          <p className={contentStyles.content_name}>{artist.name}</p>
-          <p className={contentStyles.genre_info}>{artist.genres}</p>
-        </span>
-      </li>
-    );
-  });
 
   const createPlaylistHandler = async () => {
     try {
-
       const playlistsConfig = {
         name: 'Playlists of your favorite artists',
         description: 'Playlists of your favorite artists',
@@ -89,23 +63,26 @@ export default function artist() {
     }
   };
 
-  function alertsByErrorCode(status) {
-    const messagesByErrorCode = {
-      400: 'アプリケーションのエラーが起きています。管理者へお問い合わせください。',
-      401: 'アクセス権限がありません。ログインしてください。',
-      403: 'アプリケーションのエラーが起きています。管理者へお問い合わせください。',
-      404: 'アプリケーションのエラーが起きています。管理者へお問い合わせください。',
-      429: 'リクエストが多いため利用制限されています。時間をおいて再度お試しください。',
-      500: 'Spotifyのサーバーで障害が起きています。復旧までお待ちください。',
-      502: 'Spotifyのサーバーで障害が起きています。復旧までお待ちください。',
-      503: 'Spotifyのサーバーで一時的な障害が起きています。時間をおいて再度お試しください。',
-    };
-    return messagesByErrorCode[status];
-  }
-
   const closeModal = () => {
     setFlag(false);
   }
+
+  const displayArtists = artists.map((artist, i) => {
+    return (
+      <li key={artist.id} className={contentStyles.list}>
+        <span className={contentStyles.order_number}>{i + 1}</span>
+        <img
+          className={contentStyles.img}
+          src={artist.images[1].url}
+          alt={artist.name}
+        />
+        <span className={contentStyles.music_info}>
+          <p className={contentStyles.content_name}>{artist.name}</p>
+          <p className={contentStyles.genre_info}>{artist.genres}</p>
+        </span>
+      </li>
+    );
+  });
 
   return (
     <div className={styles.container}>
