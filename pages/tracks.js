@@ -71,17 +71,9 @@ export default function tracks() {
   }, []);
 
   const getTrackByTerm = async (term) => {
-    try {
-      const data = await spotifyAPI.current.getDataByTerm(term, 'tracks');
-      setTracks(data.items);
-    } catch (error) {
-      const errorObject = JSON.stringify(error.data.error);
-      const statusCode = error.data.error.status;
-
-      const m = alertsByErrorCode(statusCode);
-      alert(`${errorObject}\n\n${m}`);
-      location.href = '/';
-    }
+    const response = await spotifyAPI.current.getDataByTerm(term, 'tracks');
+    if (response.error) return;
+    setTracks(response.items);
   };
 
   const displayTracks = tracks.map((track, i) => {
