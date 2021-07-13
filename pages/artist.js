@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import checkExpiration from '../lib/checkExpiration';
 import styles from '../styles/layout/Layout.module.scss';
 import contentStyles from '../styles/layout/Content.module.scss';
@@ -63,9 +63,7 @@ export default function artist() {
     }
   };
 
-  const closeModal = () => {
-    setFlag(false);
-  }
+  const closeModal = useCallback(() => setFlag(false), []);
 
   const displayArtists = artists.map((artist, i) => {
     return (

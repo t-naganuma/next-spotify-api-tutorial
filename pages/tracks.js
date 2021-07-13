@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import checkExpiration from '../lib/checkExpiration';
 import styles from '../styles/layout/Layout.module.scss';
@@ -168,9 +168,7 @@ export default function tracks() {
     return messagesByErrorCode[status];
   }
 
-  const closeModal = () => {
-    setFlag(false);
-  };
+  const closeModal = useCallback(() => setFlag(false), []);
 
   return (
     <div className={styles.container}>
