@@ -1,36 +1,12 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import checkExpiration from '../lib/checkExpiration';
 import styles from '../styles/layout/Layout.module.scss';
 import contentStyles from '../styles/layout/Content.module.scss';
 import buttonStyles from '../styles/components/Button.module.scss';
-import modalStyles from '../styles/components/Modal.module.scss';
 import Header from '../components/Header';
+import Modal from '../components/Modal';
 import { SpotifyApi } from '../lib/SpotifyApi';
-
-const Modal = (props) => {
-  if (!props.flag) return <></>;
-
-  const handleCloseModal = () => {
-    props.closeModal();
-  };
-
-  return (
-    <div className={`${modalStyles.modal} ${modalStyles.is_show}`}>
-      <div className={modalStyles.body}>
-        <p className={modalStyles.text}>プレイリストを作成しました！</p>
-        <div className={modalStyles.button_area}>
-          <button
-            type="button"
-            onClick={handleCloseModal}
-            className={modalStyles.close}>
-            閉じる
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 export default function tracks() {
   const [tracks, setTracks] = useState([]);
@@ -74,64 +50,32 @@ export default function tracks() {
     spotifyAPI.current = new SpotifyApi();
 
     const getTracks = async () => {
-      try {
-        const accessToken = localStorage.getItem('accessToken');
-        if (!accessToken) {
-          throw 'アクセストークンを取得できていません';
-        }
-        checkExpiration();
-        // Spotify ユーザーのTOP Tracks取得
-        const topTracks = await spotifyAPI.current.getTopTracksByUser();
-        setTracks(topTracks);
-        installWebPlayer();
-      } catch (error) {
-        if (error === 'アクセストークンを取得できていません') {
-          alert(`サインインしてください。`);
-          location.href = '/';
-        }
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+        throw 'アクセストークンを取得できていません';
       }
+      checkExpiration();
+
+      // Spotify ユーザーのTOP Tracks取得
+      const response = await spotifyAPI.current.getTopTracksByUser();
+      if (response.error) {
+        alert(
+          `認証エラーです。\n${response.error.status} ${response.error.message}`
+        );
+        location.href = '/';
+        return;
+      }
+      setTracks(response);
+      installWebPlayer();
     };
     getTracks();
   }, []);
 
   const getTrackByTerm = async (term) => {
-    try {
-      const data = await spotifyAPI.current.getDataByTerm(term, 'tracks');
-      setTracks(data.items);
-    } catch (error) {
-      const errorObject = JSON.stringify(error.data.error);
-      const statusCode = error.data.error.status;
-
-      const m = alertsByErrorCode(statusCode);
-      alert(`${errorObject}\n\n${m}`);
-      location.href = '/';
-    }
+    const response = await spotifyAPI.current.getDataByTerm(term, 'tracks');
+    if (response.error) return;
+    setTracks(response.items);
   };
-
-  const displayTracks = tracks.map((track, i) => {
-    return (
-      <li key={track.id} className={contentStyles.list}>
-        <span className={contentStyles.order_number}>{i + 1}</span>
-        <img
-          className={contentStyles.img}
-          src={track.album.images[1].url}
-          alt={track.name}
-        />
-        <span className={contentStyles.music_info}>
-          <p className={contentStyles.content_name}>{track.name}</p>
-          <p className={contentStyles.genre_info}>{track.artists[0].name}</p>
-        </span>
-        <button className={buttonStyles.play_icon} onClick={() => playbackTrack(track)}>
-          <Image
-            src={playingTrack === track ? '/stop.png' : '/play.png'}
-            alt="再生する"
-            width={30}
-            height={30}
-          />
-        </button>
-      </li>
-    );
-  });
 
   const createPlaylistHandler = async () => {
     try {
@@ -159,32 +103,47 @@ export default function tracks() {
      * useState
      * tracks, deviceId, playingTrack
      */
-    try {
-      if (playingTrack && playingTrack.id === track.id) {
-        // 再生中の曲と再生ボタンを押した曲が同じならtogglePlayに。
-        playerRef.current.togglePlay();
-
-        playerRef.current.getCurrentState().then((state) => {
-          if (!state.paused) {
-            setPlayingTrack(null);
-          }
-        });
-
-      } else {
-        // 再生中の曲を格納
-        setPlayingTrack(track);
-        // status codeを取得、再生している状態を格納
-        const statusCode = await spotifyAPI.current.playTrack(deviceId, track);
-        if (statusCode === 204) setIsPlaying(true);
-      }
-    } catch(error) {
-      const errorObject = JSON.stringify(error.data.error);
-      const statusCode = error.status;
-      let m = alertsByErrorCode(statusCode);
-      alert(`${errorObject}\n\n${m}`);
-      location.href = '/';
+    if (playingTrack && playingTrack.id === track.id) {
+      // 再生中の曲と再生ボタンを押した曲が同じならtogglePlayに。
+      playerRef.current.togglePlay();
+      playerRef.current.getCurrentState().then((state) => {
+        if (!state.paused) setPlayingTrack(null);
+      });
+    } else {
+      // 再生中の曲を格納
+      setPlayingTrack(track);
+      // status codeを取得、再生している状態を格納
+      const response = await spotifyAPI.current.playTrack(deviceId, track);
+      if (response === 204) setIsPlaying(true);
     }
   }
+
+  const displayTracks = tracks.map((track, i) => {
+    return (
+      <li key={track.id} className={contentStyles.list}>
+        <span className={contentStyles.order_number}>{i + 1}</span>
+        <img
+          className={contentStyles.img}
+          src={track.album.images[1].url}
+          alt={track.name}
+        />
+        <span className={contentStyles.music_info}>
+          <p className={contentStyles.content_name}>{track.name}</p>
+          <p className={contentStyles.genre_info}>{track.artists[0].name}</p>
+        </span>
+        <button
+          className={buttonStyles.play_icon}
+          onClick={() => playbackTrack(track)}>
+          <Image
+            src={playingTrack === track ? '/stop.png' : '/play.png'}
+            alt="再生する"
+            width={30}
+            height={30}
+          />
+        </button>
+      </li>
+    );
+  });
 
   function alertsByErrorCode(status) {
     const messagesByErrorCode = {
@@ -200,9 +159,7 @@ export default function tracks() {
     return messagesByErrorCode[status];
   }
 
-  const closeModal = () => {
-    setFlag(false);
-  };
+  const closeModal = useCallback(() => setFlag(false), []);
 
   return (
     <div className={styles.container}>
