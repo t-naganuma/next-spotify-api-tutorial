@@ -3,7 +3,6 @@ import modalStyles from '../styles/components/Modal.module.scss';
 
 const Modal = memo((props) => {
   const { flag, closeModal } = props;
-  console.log('レンダリングしました！')
   if (!flag) return <></>;
 
   const handleCloseModal = () => {
