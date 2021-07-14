@@ -26,7 +26,7 @@ export default function artist() {
       const response = await spotifyAPI.current.getTopArtistsByUser();
       if (response.error) {
         alert(
-          `サインインしてください。\n${response.error.status} ${response.error.message}`
+          `認証エラーです。\n${response.error.status} ${response.error.message}`
         );
         location.href = '/';
         return;

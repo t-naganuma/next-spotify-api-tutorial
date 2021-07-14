@@ -50,22 +50,23 @@ export default function tracks() {
     spotifyAPI.current = new SpotifyApi();
 
     const getTracks = async () => {
-      try {
-        const accessToken = localStorage.getItem('accessToken');
-        if (!accessToken) {
-          throw 'アクセストークンを取得できていません';
-        }
-        checkExpiration();
-        // Spotify ユーザーのTOP Tracks取得
-        const topTracks = await spotifyAPI.current.getTopTracksByUser();
-        setTracks(topTracks);
-        installWebPlayer();
-      } catch (error) {
-        if (error === 'アクセストークンを取得できていません') {
-          alert(`サインインしてください。`);
-          location.href = '/';
-        }
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+        throw 'アクセストークンを取得できていません';
       }
+      checkExpiration();
+
+      // Spotify ユーザーのTOP Tracks取得
+      const response = await spotifyAPI.current.getTopTracksByUser();
+      if (response.error) {
+        alert(
+          `認証エラーです。\n${response.error.status} ${response.error.message}`
+        );
+        location.href = '/';
+        return;
+      }
+      setTracks(response);
+      installWebPlayer();
     };
     getTracks();
   }, []);
