@@ -76,31 +76,6 @@ export default function tracks() {
     setTracks(response.items);
   };
 
-  const displayTracks = tracks.map((track, i) => {
-    return (
-      <li key={track.id} className={contentStyles.list}>
-        <span className={contentStyles.order_number}>{i + 1}</span>
-        <img
-          className={contentStyles.img}
-          src={track.album.images[1].url}
-          alt={track.name}
-        />
-        <span className={contentStyles.music_info}>
-          <p className={contentStyles.content_name}>{track.name}</p>
-          <p className={contentStyles.genre_info}>{track.artists[0].name}</p>
-        </span>
-        <button className={buttonStyles.play_icon} onClick={() => playbackTrack(track)}>
-          <Image
-            src={playingTrack === track ? '/stop.png' : '/play.png'}
-            alt="再生する"
-            width={30}
-            height={30}
-          />
-        </button>
-      </li>
-    );
-  });
-
   const createPlaylistHandler = async () => {
     try {
       const playlistsConfig = {
@@ -127,32 +102,47 @@ export default function tracks() {
      * useState
      * tracks, deviceId, playingTrack
      */
-    try {
-      if (playingTrack && playingTrack.id === track.id) {
-        // 再生中の曲と再生ボタンを押した曲が同じならtogglePlayに。
-        playerRef.current.togglePlay();
-
-        playerRef.current.getCurrentState().then((state) => {
-          if (!state.paused) {
-            setPlayingTrack(null);
-          }
-        });
-
-      } else {
-        // 再生中の曲を格納
-        setPlayingTrack(track);
-        // status codeを取得、再生している状態を格納
-        const statusCode = await spotifyAPI.current.playTrack(deviceId, track);
-        if (statusCode === 204) setIsPlaying(true);
-      }
-    } catch(error) {
-      const errorObject = JSON.stringify(error.data.error);
-      const statusCode = error.status;
-      let m = alertsByErrorCode(statusCode);
-      alert(`${errorObject}\n\n${m}`);
-      location.href = '/';
+    if (playingTrack && playingTrack.id === track.id) {
+      // 再生中の曲と再生ボタンを押した曲が同じならtogglePlayに。
+      playerRef.current.togglePlay();
+      playerRef.current.getCurrentState().then((state) => {
+        if (!state.paused) setPlayingTrack(null);
+      });
+    } else {
+      // 再生中の曲を格納
+      setPlayingTrack(track);
+      // status codeを取得、再生している状態を格納
+      const response = await spotifyAPI.current.playTrack(deviceId, track);
+      if (response === 204) setIsPlaying(true);
     }
   }
+
+  const displayTracks = tracks.map((track, i) => {
+    return (
+      <li key={track.id} className={contentStyles.list}>
+        <span className={contentStyles.order_number}>{i + 1}</span>
+        <img
+          className={contentStyles.img}
+          src={track.album.images[1].url}
+          alt={track.name}
+        />
+        <span className={contentStyles.music_info}>
+          <p className={contentStyles.content_name}>{track.name}</p>
+          <p className={contentStyles.genre_info}>{track.artists[0].name}</p>
+        </span>
+        <button
+          className={buttonStyles.play_icon}
+          onClick={() => playbackTrack(track)}>
+          <Image
+            src={playingTrack === track ? '/stop.png' : '/play.png'}
+            alt="再生する"
+            width={30}
+            height={30}
+          />
+        </button>
+      </li>
+    );
+  });
 
   function alertsByErrorCode(status) {
     const messagesByErrorCode = {
