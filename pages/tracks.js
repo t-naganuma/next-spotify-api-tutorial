@@ -6,7 +6,7 @@ import contentStyles from '../styles/layout/Content.module.scss';
 import buttonStyles from '../styles/components/Button.module.scss';
 import Header from '../components/Header';
 import Modal from '../components/Modal';
-import { SpotifyApi } from '../lib/SpotifyApi';
+import { SpotifyApi, messagesByErrorCode } from '../lib/SpotifyApi';
 
 export default function tracks() {
   const [tracks, setTracks] = useState([]);
@@ -78,24 +78,16 @@ export default function tracks() {
   };
 
   const createPlaylistHandler = async () => {
-    try {
-      const playlistsConfig = {
-        name: 'Playlists of your favorite tracks',
-        description: 'Playlists of your favorite tracks',
-        public: true,
-      };
-      await spotifyAPI.current.getPlaylistId(playlistsConfig);
+    const playlistsConfig = {
+      name: 'Playlists of your favorite tracks',
+      description: 'Playlists of your favorite tracks',
+      public: true,
+    };
+    await spotifyAPI.current.getPlaylistId(playlistsConfig);
 
-      const tracks_uri = await spotifyAPI.current.getTopTrackUris(tracks);
-      const responseStatus = await spotifyAPI.current.createPlaylist(tracks_uri);
-      if (responseStatus === 201) setFlag(true);
-    } catch (error) {
-      const errorObject = JSON.stringify(error.data.error);
-      const statusCode = error.data.error.status;
-      let m = alertsByErrorCode(statusCode);
-      alert(`${errorObject}\n\n${m}`);
-      location.href = '/';
-    }
+    const tracks_uri = await tracks.map((track) => {return track.uri});
+    const responseStatus = await spotifyAPI.current.createPlaylist(tracks_uri);
+    if (responseStatus === 201) setFlag(true);
   };
 
   const playbackTrack = async (track) => {
@@ -144,20 +136,6 @@ export default function tracks() {
       </li>
     );
   });
-
-  function alertsByErrorCode(status) {
-    const messagesByErrorCode = {
-      400: 'アプリケーションのエラーが起きています。管理者へお問い合わせください。',
-      401: 'アクセス権限がありません。ログインしてください。',
-      403: 'アプリケーションのエラーが起きています。管理者へお問い合わせください。',
-      404: 'アプリケーションのエラーが起きています。管理者へお問い合わせください。',
-      429: 'リクエストが多いため利用制限されています。時間をおいて再度お試しください。',
-      500: 'Spotifyのサーバーで障害が起きています。復旧までお待ちください。',
-      502: 'Spotifyのサーバーで障害が起きています。復旧までお待ちください。',
-      503: 'Spotifyのサーバーで一時的な障害が起きています。時間をおいて再度お試しください。',
-    };
-    return messagesByErrorCode[status];
-  }
 
   const closeModal = useCallback(() => setFlag(false), []);
 
