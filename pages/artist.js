@@ -5,7 +5,7 @@ import contentStyles from '../styles/layout/Content.module.scss';
 import buttonStyles from '../styles/components/Button.module.scss';
 import Header from '../components/Header';
 import Modal from '../components/Modal';
-import { SpotifyApi } from '../lib/SpotifyApi';
+import { SpotifyApi, messagesByErrorCode } from '../lib/SpotifyApi';
 
 export default function artist() {
   const [artists, setArtists] = useState([]);
@@ -54,11 +54,8 @@ export default function artist() {
       const tracks_uri = await spotifyAPI.current.getArtistTrackUris(artists);
       const responseStatus = await spotifyAPI.current.createPlaylist(tracks_uri);
       if (responseStatus === 201) setFlag(true);
-    } catch (error) {
-      const errorObject = JSON.stringify(error.data.error);
-      const statusCode = error.data.error.status;
-      let m = alertsByErrorCode(statusCode);
-      alert(`${errorObject}\n\n${m}`);
+    } catch(error) {
+      alert(`エラーが発生しました。時間をおいてから再度行ってください。`)
       location.href = '/';
     }
   };
