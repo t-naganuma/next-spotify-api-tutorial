@@ -45,7 +45,7 @@ export default function artist() {
   const createPlaylistHandler = async () => {
     try {
       const playlistsConfig = {
-        name: 'Playlists',
+        name: 'Playlists of your favorite artists',
         description: 'Playlists of your favorite artists',
         public: true,
       };
