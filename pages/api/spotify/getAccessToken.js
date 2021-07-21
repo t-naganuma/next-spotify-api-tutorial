@@ -1,13 +1,18 @@
 import axios from 'axios';
+import config from '../../../config/index.js';
 
 export default async (req, res) => {
   const params = new URLSearchParams();
   params.append('grant_type', 'authorization_code');
+  // params.append(
+  //   'code',
+  //   new URL(config.BASE_URL + req.url).searchParams.get('code')
+  // );
   params.append(
     'code',
-    new URL('http://localhost:3000' + req.url).searchParams.get('code')
+    new URL(config.APP_URL + req.url).searchParams.get('code')
   );
-  params.append('redirect_uri', 'http://localhost:3000');
+  params.append('redirect_uri', config.BASE_URL);
   const endpoint = 'https://accounts.spotify.com/api/token';
   const response = await axios.post(endpoint, params, {
     headers: {
