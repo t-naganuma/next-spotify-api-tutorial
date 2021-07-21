@@ -19,8 +19,7 @@ export default async (req, res) => {
   const state = generateRandomString(16);
   params.append('client_id', process.env.CLIENT_ID);
   params.append('response_type', 'code');
-  // params.append('redirect_uri', config.BASE_URL);
-  params.append('redirect_uri', config.APP_URL);
+  params.append('redirect_uri', config.BASE_URL);
   params.append('scope', scopes);
   params.append('state', state);
   const endpoint = 'https://accounts.spotify.com/authorize';
