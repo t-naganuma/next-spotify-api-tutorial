@@ -1,0 +1,49 @@
+@import '../variables.scss';
+@import '../mixin.scss';
+@import '../function.scss';
+
+.heading1 {
+  color: $white;
+  font-size: rem(28px);
+  font-weight: bold;
+}
+
+.nav {
+  background-color: $primary-color;
+  padding: 8px 0;
+  width: 100%;
+}
+
+.nav_container {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin: 0 auto;
+  max-width: 1000px;
+  width: 100%;
+}
+
+.nav_lists {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+
+.nav_list {
+  color: $white;
+  font-size: rem(20px);
+  &:not(:last-child) {
+    margin: 0 24px 0 0;
+  }
+  & a {
+    opacity: .5;
+    &:hover {
+      opacity: 1;
+    }
+  }
+  &[data-active="true"] {
+    & a {
+      opacity: 1;
+    }
+  }
+}

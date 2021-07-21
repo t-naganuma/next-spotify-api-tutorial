@@ -1,0 +1,65 @@
+@import '../variables.scss';
+@import '../mixin.scss';
+@import '../function.scss';
+
+.button {
+  border-radius: 25px;
+  box-shadow: 0 4px 14px 0 rgb(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: center;
+  min-width: 200px;
+  padding: rem(12px) rem(32px);
+  transition: box-shadow .3s ease;
+}
+
+.login {
+  background-color: $secondary-color;
+  color: $white;
+  font-size: rem(20px);
+  font-weight: bold;
+}
+
+.link {
+  background-color: $secondary-color;
+  color: $white;
+  font-size: rem(16px);
+}
+
+.blue {
+  background-color: $secondary-color;
+  color: $white;
+  font-size: rem(16px);
+  font-weight: bold;
+  opacity: .8;
+  transition: opacity .3s ease;
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.dark {
+  background-color: #191970;
+  color: $white;
+  font-size: rem(16px);
+  font-weight: bold;
+  opacity: .8;
+  transition: opacity .3s ease;
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.buttonWrap {
+  display: flex;
+  margin: rem(40px) 0 0 0;
+  justify-content: center;
+  width: 100%;
+  & .button:nth-of-type(2) {
+    margin: 0 0 0 rem(16px);
+  }
+}
+
+.play_icon {
+  display: inline-block;
+  margin: 0 0 0 auto;
+}

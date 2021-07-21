@@ -1,44 +1,78 @@
-import axios from 'axios'
-import React from 'react';
+import axios from 'axios';
+import React, { useEffect } from 'react';
+import Link from 'next/link';
+import config from '../config';
+import styles from '../styles/layout/Layout.module.scss';
+import topStyles from '../styles/layout/Top.module.scss';
+import buttonStyles from '../styles/components/Button.module.scss';
+import auth from '../lib/auth.js';
 
 export default function index() {
-  // APIで取得したアーティストをstateに格納するため
-  const [artists, setArtists] = React.useState([]);
+  useEffect(() => {
+    const getAccessToken = async () => {
+      const endpoint = `${config.BASE_URL}/api/spotify/getAccessToken`;
+      const params = {
+        code: new URL(window.location.href).searchParams.get('code'),
+      };
+      // params.codeに値が無ければreturn
+      if (! params.code) return;
 
-  // アクセストークンを取得し、ローカルストレージに保存する
-  const auth = () => {
-    const endpoint = 'http://localhost:3000/api/spotify/auth';
-    axios.get(endpoint)
-      .then(res => {
-        localStorage.setItem('accessToken', res.data.access_token);
-      });
-  }
+      const response = await axios
+        .get(endpoint, { params })
+        .then((res) => res.data.data)
+        .catch((error) => {
+          const statusCode = error.response.status;
+          if (statusCode === 500) {
+            alert('Spotifyのサーバーで障害が起きています。復旧までお待ちください。');
+            return false;
+          }
+        });
+      // localStorageにTokenをセット
+      localStorage.setItem('accessToken', response.access_token);
+      localStorage.setItem('refreshToken', response.refresh_token);
 
-  // APIを叩いて結果をstateに格納する
-  const getArtists = () => {
-    const accessToken = localStorage.getItem('accessToken');
-    if (! accessToken) {
-      alert('アクセストークンが無効です');
-      return;
-    }
+      // Tokenの有効期限を時間に直してセット
+      const now = new Date();
+      const expiration = response.expires_in / 60 / 60;
+      now.setHours(now.getHours() + expiration);
+      localStorage.setItem('expiredAt', now);
 
-    const endpoint = 'https://api.spotify.com/v1/artists';
-    const params = {ids: '0oSGxfWSnnOXhD2fKuz2Gy,3dBVyJ7JuOMt4GE9607Qin'};
-    const headers = {'Authorization': `Bearer ${accessToken}`,};
-    axios.get(endpoint, {params,headers})
-      .then(res => {
-        setArtists(res.data.artists);
-      });
-  }
+      // ブラウザURL部分のクエリを削除
+      const url = new URL(window.location.href);
+      url.searchParams.delete('code');
+      url.searchParams.delete('state');
+      history.pushState({}, '', url);
+    };
+    getAccessToken();
+  }, []);
 
   return (
-    <>
-      <button onClick={auth}>auth</button>
-      <button onClick={getArtists}>get artists</button>
-      {/* stateに格納されたアーティストを表示する */}
-      {artists.map((artist) => {
-        return <p key={artist.id}>{artist.name}</p>
-      })}
-    </>
-  )
+    <div className={styles.container}>
+      <main>
+        <section className={topStyles.sec_top}>
+          <h1 className={topStyles.heading1}>Create Playlists App</h1>
+          <div className={buttonStyles.buttonWrap}>
+            <button
+              className={`${buttonStyles.button} ${buttonStyles.login}`}
+              onClick={auth}>
+              Sign in with Spotify
+            </button>
+          </div>
+          <div className={buttonStyles.buttonWrap}>
+            <Link href="/artist">
+              <button className={`${buttonStyles.button} ${buttonStyles.link}`}>
+                Top Artist
+              </button>
+            </Link>
+            <Link href="/tracks">
+              <button
+                className={`${buttonStyles.button} ${buttonStyles.link}`}>
+                Top Tracks
+              </button>
+            </Link>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
 }

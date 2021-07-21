@@ -1,0 +1,89 @@
+@import '../variables.scss';
+@import '../mixin.scss';
+@import '../function.scss';
+
+.sec_top {
+  margin: 0 auto;
+  max-width: 1000px;
+}
+
+.heading1 {
+  color: $text-color;
+  font-size: rem(32px);
+  font-weight: bold;
+  text-align: center;
+}
+
+.list {
+  border-bottom: 1px solid $border-color;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: rem(12px) 0;
+}
+
+.img {
+  height: 50px;
+  min-width: 50px;
+  width: 50px;
+}
+
+.sec_contents {
+  margin: 0 auto;
+  max-width: 960px;
+  padding: 0 0 120px 0;
+  width: 100%;
+}
+
+.music_info {
+  display: flex;
+  flex-direction: column;
+  margin: 0 0 0 rem(12px);
+}
+
+.order_number {
+  color: $sub-content-color;
+  min-width: rem(35px);
+}
+
+.content_name {
+  color: $content-color;
+  font-size: rem(16px);
+  font-weight: bold;
+}
+
+.genre_info {
+  color: $sub-content-color;
+  font-size: rem(12px);
+  margin: rem(4px) 0 0 0;
+}
+
+.time_range_selector {
+  align-items: center;
+  display: flex;
+  justify-content: flex-start;
+  margin: 0 auto;
+  max-width: 1000px;
+  padding: 16px 0;
+  width: 100%;
+  & button:not(:first-child) {
+    margin: 0 0 0 10px;
+  }
+}
+
+.create_playlists {
+  background-color: $white;
+  border-top: 1px solid $border-color;
+  padding: 16px 0;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  &_inner {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0 auto;
+    max-width: 1000px;
+    width: 100%;
+  }
+}
