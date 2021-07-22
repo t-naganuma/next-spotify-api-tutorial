@@ -8,10 +8,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 48px;
+  min-height: 24px;
   min-width: 200px;
   padding: rem(12px) rem(32px);
   transition: box-shadow .3s ease;
+  @include responsive(sm) {
+    min-height: 48px;
+  }
 }
 
 .buttonWrap {
@@ -59,27 +62,17 @@
   font-size: rem(16px);
 }
 
-.blue {
-  background-color: $secondary-color;
+.playlist {
+  background-color: #445db8;
   color: $white;
-  font-size: rem(16px);
-  font-weight: bold;
-  opacity: .8;
-  transition: opacity .3s ease;
-  &:hover {
-    opacity: 1;
-  }
-}
-
-.dark {
-  background-color: #191970;
-  color: $white;
-  font-size: rem(16px);
-  font-weight: bold;
-  opacity: .8;
-  transition: opacity .3s ease;
-  &:hover {
-    opacity: 1;
+  @include responsive(sm) {
+    font-size: rem(16px);
+    font-weight: bold;
+    opacity: .8;
+    transition: opacity .3s ease;
+    &:hover {
+      opacity: 1;
+    }
   }
 }
 
