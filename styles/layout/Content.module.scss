@@ -35,7 +35,10 @@
 
 .order_number {
   color: $sub-content-color;
-  min-width: rem(35px);
+  padding: 0 rem(16px) 0 0;
+  @include responsive(sm) {
+    padding: 0 rem(32px) 0 0;
+  }
 }
 
 .content_name {
