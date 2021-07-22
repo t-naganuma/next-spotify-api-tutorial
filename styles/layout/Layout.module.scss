@@ -1,4 +1,6 @@
 @import '../variables.scss';
+@import '../function.scss';
+@import '../mixin.scss';
 
 .container {
   background-color: $bg-color;
@@ -10,7 +12,30 @@
 
 .main {
   margin: 0 auto;
-  max-width: 1000px;
   position: relative;
   width: 100%;
+  @include responsive(sm) {
+    max-width: 1000px;
+  }
+}
+
+.sec_top {
+  padding: 12% 5% 0;
+  width: 100%;
+  @include responsive(sm) {
+    max-width: 1000px;
+    padding: 80px 0 0 0;
+  }
+}
+
+.heading1 {
+  background-image: linear-gradient(to right, #52aeec 0%, #b490ca 100%);
+  -webkit-background-clip: text;
+  color: transparent;
+  font-size: rem(48px);
+  font-weight: bold;
+  text-align: center;
+  @include responsive(sm) {
+    font-size: rem(48px);
+  }
 }

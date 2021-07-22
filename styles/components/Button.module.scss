@@ -6,21 +6,55 @@
   border-radius: 25px;
   box-shadow: 0 4px 14px 0 rgb(0, 0, 0, 0.2);
   display: flex;
+  align-items: center;
   justify-content: center;
+  min-height: 48px;
   min-width: 200px;
   padding: rem(12px) rem(32px);
   transition: box-shadow .3s ease;
 }
 
+.buttonWrap {
+  display: flex;
+  flex-direction: column;
+  margin: rem(40px) 0 0 0;
+  justify-content: center;
+  width: 100%;
+  @include responsive(sm) {
+    flex-direction: row;
+    margin: rem(40px) 0 0 0;
+    justify-content: center;
+  }
+  & .button:nth-of-type(2) {
+    margin: rem(24px) 0 0 0;
+    @include responsive(sm) {
+      margin: 0 0 0 rem(16px);
+    }
+  }
+}
+
+.loginWrap {
+  display: flex;
+  justify-content: center;
+  margin: rem(40px) 0 0 0;
+  width: 100%;
+  & > .button {
+    width: 100%;
+    @include responsive(sm) {
+      width: auto;
+    }
+  }
+}
+
 .login {
-  background-color: $secondary-color;
+  background-image: linear-gradient(to right, #48c6ef 0%, #778cda 100%);
   color: $white;
   font-size: rem(20px);
   font-weight: bold;
 }
 
 .link {
-  background-color: $secondary-color;
+  background-color: #778cda;
   color: $white;
   font-size: rem(16px);
 }
@@ -46,16 +80,6 @@
   transition: opacity .3s ease;
   &:hover {
     opacity: 1;
-  }
-}
-
-.buttonWrap {
-  display: flex;
-  margin: rem(40px) 0 0 0;
-  justify-content: center;
-  width: 100%;
-  & .button:nth-of-type(2) {
-    margin: 0 0 0 rem(16px);
   }
 }
 
