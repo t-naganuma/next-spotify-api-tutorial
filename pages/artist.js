@@ -63,6 +63,16 @@ export default function artist() {
   const closeModal = useCallback(() => setFlag(false), []);
 
   const displayArtists = artists.map((artist, i) => {
+    const genreName = artist.genres.map((g) => {
+      let genre = '';
+      if (artist.genres.slice(-1)[0] === g) {
+        genre += g;
+      } else {
+        genre += g + ', ';
+      }
+      return genre;
+    });
+
     return (
       <li key={artist.id} className={contentStyles.list}>
         <span className={contentStyles.order_number}>{i + 1}</span>
@@ -73,7 +83,7 @@ export default function artist() {
         />
         <span className={contentStyles.music_info}>
           <p className={contentStyles.content_name}>{artist.name}</p>
-          <p className={contentStyles.genre_info}>{artist.genres}</p>
+          <p className={contentStyles.genre_info}>{genreName}</p>
         </span>
       </li>
     );
