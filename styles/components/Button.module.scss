@@ -6,56 +6,86 @@
   border-radius: 25px;
   box-shadow: 0 4px 14px 0 rgb(0, 0, 0, 0.2);
   display: flex;
+  align-items: center;
   justify-content: center;
+  min-height: 24px;
   min-width: 200px;
   padding: rem(12px) rem(32px);
   transition: box-shadow .3s ease;
-}
-
-.login {
-  background-color: $secondary-color;
-  color: $white;
-  font-size: rem(20px);
-  font-weight: bold;
-}
-
-.link {
-  background-color: $secondary-color;
-  color: $white;
-  font-size: rem(16px);
-}
-
-.blue {
-  background-color: $secondary-color;
-  color: $white;
-  font-size: rem(16px);
-  font-weight: bold;
-  opacity: .8;
-  transition: opacity .3s ease;
-  &:hover {
-    opacity: 1;
-  }
-}
-
-.dark {
-  background-color: #191970;
-  color: $white;
-  font-size: rem(16px);
-  font-weight: bold;
-  opacity: .8;
-  transition: opacity .3s ease;
-  &:hover {
-    opacity: 1;
+  @include responsive(sm) {
+    min-height: 48px;
   }
 }
 
 .buttonWrap {
   display: flex;
+  flex-direction: column;
   margin: rem(40px) 0 0 0;
   justify-content: center;
   width: 100%;
+  @include responsive(sm) {
+    flex-direction: row;
+    margin: rem(40px) 0 0 0;
+    justify-content: center;
+  }
   & .button:nth-of-type(2) {
-    margin: 0 0 0 rem(16px);
+    margin: rem(24px) 0 0 0;
+    @include responsive(sm) {
+      margin: 0 0 0 rem(16px);
+    }
+  }
+}
+
+.loginWrap {
+  display: flex;
+  justify-content: center;
+  margin: rem(40px) 0 0 0;
+  width: 100%;
+  & > .button {
+    width: 100%;
+    @include responsive(sm) {
+      width: auto;
+    }
+  }
+}
+
+.login {
+  background-image: linear-gradient(to right, #778cda 0%, #48c6ef 51%, #778cda 100%);
+  background-size: 200% auto;
+  color: $white;
+  font-size: rem(20px);
+  font-weight: bold;
+  @include responsive(sm) {
+    transition: background-position .3s ease;
+    &:hover {
+      background-position: right center;
+    }
+  }
+}
+
+.link {
+  background-color: #778cda;
+  color: $white;
+  font-size: rem(16px);
+  @include responsive(sm) {
+    transition: opacity .3s ease;
+    &:hover {
+      opacity: .8;
+    }
+  }
+}
+
+.playlist {
+  background-color: #445db8;
+  color: $white;
+  @include responsive(sm) {
+    font-size: rem(16px);
+    font-weight: bold;
+    opacity: .8;
+    transition: opacity .3s ease;
+    &:hover {
+      opacity: 1;
+    }
   }
 }
 
