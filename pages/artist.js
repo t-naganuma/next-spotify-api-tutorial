@@ -5,7 +5,7 @@ import contentStyles from '../styles/layout/Content.module.scss';
 import buttonStyles from '../styles/components/Button.module.scss';
 import Header from '../components/Header';
 import Modal from '../components/Modal';
-import { SpotifyApi, messagesByErrorCode } from '../lib/SpotifyApi';
+import { SpotifyApi } from '../lib/SpotifyApi';
 
 export default function artist() {
   const [artists, setArtists] = useState([]);
