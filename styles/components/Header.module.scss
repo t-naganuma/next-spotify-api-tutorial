@@ -4,14 +4,20 @@
 
 .heading1 {
   color: $white;
-  font-size: rem(28px);
+  font-size: rem(24px); 
   font-weight: bold;
+  @include responsive(sm) {
+    font-size: rem(28px);
+  }
 }
 
 .nav {
   background-color: $primary-color;
-  padding: 8px 0;
+  padding: rem(12px) rem(8px);
   width: 100%;
+  @include responsive(sm) {
+    padding: rem(8px) 0;
+  }
 }
 
 .nav_container {
@@ -19,8 +25,14 @@
   display: flex;
   justify-content: space-between;
   margin: 0 auto;
-  max-width: 1000px;
+  max-width: 960px;
   width: 100%;
+  @include responsive(sm) {
+    width: 90%;
+  }
+  @include responsive(lg) {
+    width: 100%;
+  }
 }
 
 .nav_lists {
@@ -31,9 +43,15 @@
 
 .nav_list {
   color: $white;
-  font-size: rem(20px);
+  font-size: rem(18px);
+  @include responsive(sm) {
+    font-size: rem(20px);
+  }
   &:not(:last-child) {
-    margin: 0 24px 0 0;
+    margin: 0 rem(16px) 0 0;
+    @include responsive(sm) {
+      margin: 0 rem(24px) 0 0;
+    }
   }
   & a {
     opacity: .5;

@@ -5,7 +5,7 @@ import contentStyles from '../styles/layout/Content.module.scss';
 import buttonStyles from '../styles/components/Button.module.scss';
 import Header from '../components/Header';
 import Modal from '../components/Modal';
-import { SpotifyApi, messagesByErrorCode } from '../lib/SpotifyApi';
+import { SpotifyApi } from '../lib/SpotifyApi';
 
 export default function artist() {
   const [artists, setArtists] = useState([]);
@@ -63,6 +63,16 @@ export default function artist() {
   const closeModal = useCallback(() => setFlag(false), []);
 
   const displayArtists = artists.map((artist, i) => {
+    const genreName = artist.genres.map((g) => {
+      let genre = '';
+      if (artist.genres.slice(-1)[0] === g) {
+        genre += g;
+      } else {
+        genre += g + ', ';
+      }
+      return genre;
+    });
+
     return (
       <li key={artist.id} className={contentStyles.list}>
         <span className={contentStyles.order_number}>{i + 1}</span>
@@ -73,7 +83,7 @@ export default function artist() {
         />
         <span className={contentStyles.music_info}>
           <p className={contentStyles.content_name}>{artist.name}</p>
-          <p className={contentStyles.genre_info}>{artist.genres}</p>
+          <p className={contentStyles.genre_info}>{genreName}</p>
         </span>
       </li>
     );
@@ -86,17 +96,17 @@ export default function artist() {
         <section className={contentStyles.sec_contents}>
           <div className={contentStyles.time_range_selector}>
             <button
-              className={`${buttonStyles.button} ${buttonStyles.blue}`}
+              className={contentStyles.timeRange}
               onClick={() => getArtistByTerm('short_term')}>
               Last month
             </button>
             <button
-              className={`${buttonStyles.button} ${buttonStyles.blue}`}
+              className={contentStyles.timeRange}
               onClick={() => getArtistByTerm('medium_term')}>
               Last 6 month
             </button>
             <button
-              className={`${buttonStyles.button} ${buttonStyles.blue}`}
+              className={contentStyles.timeRange}
               onClick={() => getArtistByTerm('long_term')}>
               All time
             </button>
@@ -105,7 +115,7 @@ export default function artist() {
           <div className={contentStyles.create_playlists}>
             <div className={contentStyles.create_playlists_inner}>
               <button
-                className={`${buttonStyles.button} ${buttonStyles.dark}`}
+                className={`${buttonStyles.button} ${buttonStyles.playlist}`}
                 onClick={createPlaylistHandler}>
                 Create Playlist
               </button>
