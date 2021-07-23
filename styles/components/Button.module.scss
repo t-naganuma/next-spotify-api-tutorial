@@ -50,16 +50,29 @@
 }
 
 .login {
-  background-image: linear-gradient(to right, #48c6ef 0%, #778cda 100%);
+  background-image: linear-gradient(to right, #778cda 0%, #48c6ef 51%, #778cda 100%);
+  background-size: 200% auto;
   color: $white;
   font-size: rem(20px);
   font-weight: bold;
+  @include responsive(sm) {
+    transition: background-position .3s ease;
+    &:hover {
+      background-position: right center;
+    }
+  }
 }
 
 .link {
   background-color: #778cda;
   color: $white;
   font-size: rem(16px);
+  @include responsive(sm) {
+    transition: opacity .3s ease;
+    &:hover {
+      opacity: .8;
+    }
+  }
 }
 
 .playlist {
