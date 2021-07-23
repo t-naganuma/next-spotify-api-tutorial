@@ -100,6 +100,9 @@
   bottom: 0;
   width: 100%;
   @include responsive(sm) {
+    padding: rem(16px) 5%;
+  }
+  @include responsive(lg) {
     padding: rem(16px) 0;
   }
   &_inner {

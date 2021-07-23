@@ -25,8 +25,14 @@
   display: flex;
   justify-content: space-between;
   margin: 0 auto;
-  max-width: 1000px;
+  max-width: 960px;
   width: 100%;
+  @include responsive(sm) {
+    width: 90%;
+  }
+  @include responsive(lg) {
+    width: 100%;
+  }
 }
 
 .nav_lists {
