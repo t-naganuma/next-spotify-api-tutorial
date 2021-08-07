@@ -1,4 +1,5 @@
 import axios from 'axios';
+import config from '../../../config/index.js';
 
 const generateRandomString = (length) => {
   let text = '';
@@ -18,7 +19,7 @@ export default async (req, res) => {
   const state = generateRandomString(16);
   params.append('client_id', process.env.CLIENT_ID);
   params.append('response_type', 'code');
-  params.append('redirect_uri', 'http://localhost:3000');
+  params.append('redirect_uri', config.BASE_URL);
   params.append('scope', scopes);
   params.append('state', state);
   const endpoint = 'https://accounts.spotify.com/authorize';

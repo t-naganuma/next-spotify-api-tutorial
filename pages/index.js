@@ -3,7 +3,6 @@ import React, { useEffect } from 'react';
 import Link from 'next/link';
 import config from '../config';
 import styles from '../styles/layout/Layout.module.scss';
-import topStyles from '../styles/layout/Top.module.scss';
 import buttonStyles from '../styles/components/Button.module.scss';
 import auth from '../lib/auth.js';
 
@@ -48,10 +47,10 @@ export default function index() {
 
   return (
     <div className={styles.container}>
-      <main>
-        <section className={topStyles.sec_top}>
-          <h1 className={topStyles.heading1}>Create Playlists App</h1>
-          <div className={buttonStyles.buttonWrap}>
+      <main className={styles.main}>
+        <section className={styles.sec_top}>
+          <h1 className={styles.heading1}>Spellista</h1>
+          <div className={buttonStyles.loginWrap}>
             <button
               className={`${buttonStyles.button} ${buttonStyles.login}`}
               onClick={auth}>
@@ -65,8 +64,7 @@ export default function index() {
               </button>
             </Link>
             <Link href="/tracks">
-              <button
-                className={`${buttonStyles.button} ${buttonStyles.link}`}>
+              <button className={`${buttonStyles.button} ${buttonStyles.link}`}>
                 Top Tracks
               </button>
             </Link>

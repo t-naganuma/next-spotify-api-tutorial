@@ -1,38 +1,12 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import Image from 'next/image';
-import axios from 'axios';
 import checkExpiration from '../lib/checkExpiration';
-import config from '../config';
 import styles from '../styles/layout/Layout.module.scss';
 import contentStyles from '../styles/layout/Content.module.scss';
 import buttonStyles from '../styles/components/Button.module.scss';
-import modalStyles from '../styles/components/Modal.module.scss';
 import Header from '../components/Header';
+import Modal from '../components/Modal';
 import { SpotifyApi } from '../lib/SpotifyApi';
-
-const Modal = (props) => {
-  if (!props.flag) return <></>;
-
-  const handleCloseModal = () => {
-    props.closeModal();
-  };
-
-  return (
-    <div className={`${modalStyles.modal} ${modalStyles.is_show}`}>
-      <div className={modalStyles.body}>
-        <p className={modalStyles.text}>プレイリストを作成しました！</p>
-        <div className={modalStyles.button_area}>
-          <button
-            type="button"
-            onClick={handleCloseModal}
-            className={modalStyles.close}>
-            閉じる
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 export default function tracks() {
   const [tracks, setTracks] = useState([]);
@@ -41,6 +15,7 @@ export default function tracks() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [playingTrack, setPlayingTrack] = useState('');
   const playerRef = useRef(null);
+  const spotifyAPI = useRef(null);
 
   const spotifyWebPlayer = () => {
     const accessToken = localStorage.getItem('accessToken');
@@ -72,58 +47,68 @@ export default function tracks() {
   };
 
   useEffect(() => {
-    const getTracks = () => {
-      try {
-        const accessToken = localStorage.getItem('accessToken');
-        if (!accessToken) {
-          throw 'アクセストークンを取得できていません';
-        }
-        checkExpiration();
-        // Spotify ユーザーのTOP Tracks取得
-        const endpoint = `${config.API_URL}/me/top/tracks`;
-        const headers = { Authorization: `Bearer ${accessToken}` };
-        axios
-          .get(endpoint, { headers })
-          .then((res) => {
-            setTracks(res.data.items);
-          })
-          .catch((error) => {
-            throw error.response.status;
-          });
+    spotifyAPI.current = new SpotifyApi();
 
-        installWebPlayer();
-      } catch (error) {
-        if (error === 'アクセストークンを取得できていません') {
-          alert(`サインインしていません。\nサインインしてください。`);
-          location.href = '/';
-        }
+    const getTracks = async () => {
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+        throw 'アクセストークンを取得できていません';
       }
+      checkExpiration();
+
+      // Spotify ユーザーのTOP Tracks取得
+      const response = await spotifyAPI.current.getTopTracksByUser();
+      if (response.error) {
+        alert(
+          `認証エラーです。\n${response.error.status} ${response.error.message}`
+        );
+        location.href = '/';
+        return;
+      }
+      setTracks(response);
+      installWebPlayer();
     };
     getTracks();
   }, []);
 
-  const getTrackByTerm = (term) => {
-    const accessToken = localStorage.getItem('accessToken');
-    const endpoint = `${config.API_URL}/me/top/tracks?time_range=${term}`;
-    const headers = { Authorization: `Bearer ${accessToken}` };
-    try {
-      axios
-        .get(endpoint, { headers })
-        .then((res) => {
-          setTracks(res.data.items);
-        })
-        .catch((error) => {
-          throw error.response;
-        });
-    } catch (error) {
-      const errorObject = JSON.stringify(error.data.error);
-      const statusCode = error.data.error.status;
-
-      let m = alertsByErrorCode(statusCode);
-      alert(`${errorObject}\n\n${m}`);
-      location.href = '/';
-    }
+  const getTrackByTerm = async (term) => {
+    const response = await spotifyAPI.current.getDataByTerm(term, 'tracks');
+    if (response.error) return;
+    setTracks(response.items);
   };
+
+  const createPlaylistHandler = async () => {
+    const playlistsConfig = {
+      name: 'Playlists of your favorite tracks',
+      description: 'Playlists of your favorite tracks',
+      public: true,
+    };
+    await spotifyAPI.current.getPlaylistId(playlistsConfig);
+
+    const tracks_uri = await tracks.map((track) => {return track.uri});
+    const responseStatus = await spotifyAPI.current.createPlaylist(tracks_uri);
+    if (responseStatus === 201) setFlag(true);
+  };
+
+  const playbackTrack = async (track) => {
+    /**
+     * useState
+     * tracks, deviceId, playingTrack
+     */
+    if (playingTrack && playingTrack.id === track.id) {
+      // 再生中の曲と再生ボタンを押した曲が同じならtogglePlayに。
+      playerRef.current.togglePlay();
+      playerRef.current.getCurrentState().then((state) => {
+        if (!state.paused) setPlayingTrack(null);
+      });
+    } else {
+      // 再生中の曲を格納
+      setPlayingTrack(track);
+      // status codeを取得、再生している状態を格納
+      const response = await spotifyAPI.current.playTrack(deviceId, track);
+      if (response === 204) setIsPlaying(true);
+    }
+  }
 
   const displayTracks = tracks.map((track, i) => {
     return (
@@ -138,7 +123,9 @@ export default function tracks() {
           <p className={contentStyles.content_name}>{track.name}</p>
           <p className={contentStyles.genre_info}>{track.artists[0].name}</p>
         </span>
-        <button className={buttonStyles.play_icon} onClick={() => playbackTrack(track)}>
+        <button
+          className={buttonStyles.play_icon}
+          onClick={() => playbackTrack(track)}>
           <Image
             src={playingTrack === track ? '/stop.png' : '/play.png'}
             alt="再生する"
@@ -150,79 +137,7 @@ export default function tracks() {
     );
   });
 
-  const createPlaylistHandler = async () => {
-    try {
-      const spotifyAPI = new SpotifyApi();
-
-      const playlistsConfig = {
-        name: 'Playlists of your favorite tracks',
-        description: 'Playlists of your favorite tracks',
-        public: true,
-      };
-      await spotifyAPI.getPlaylistId(playlistsConfig);
-
-      const tracks_uri = await spotifyAPI.getTopTrackUris(tracks);
-      const responseStatus = await spotifyAPI.createPlaylist(tracks_uri);
-      if (responseStatus === 201) setFlag(true);
-    } catch (error) {
-      const errorObject = JSON.stringify(error.data.error);
-      const statusCode = error.data.error.status;
-      let m = alertsByErrorCode(statusCode);
-      alert(`${errorObject}\n\n${m}`);
-      location.href = '/';
-    }
-  };
-
-  const playbackTrack = async (track) => {
-    /**
-     * useState
-     * tracks, deviceId, playingTrack
-     */
-    try {
-      const spotifyAPI = new SpotifyApi();
-      if (playingTrack && playingTrack.id === track.id) {
-        // 再生中の曲と再生ボタンを押した曲が同じならtogglePlayに。
-        playerRef.current.togglePlay();
-
-        playerRef.current.getCurrentState().then((state) => {
-          if (!state.paused) {
-            setPlayingTrack(null);
-          }
-        });
-
-      } else {
-        // 再生中の曲を格納
-        setPlayingTrack(track);
-        // status codeを取得、再生している状態を格納
-        const statusCode = await spotifyAPI.playTrack(deviceId, track);
-        if (statusCode === 204) setIsPlaying(true);
-      }
-    } catch(error) {
-      const errorObject = JSON.stringify(error.data.error);
-      const statusCode = error.status;
-      let m = alertsByErrorCode(statusCode);
-      alert(`${errorObject}\n\n${m}`);
-      location.href = '/';
-    }
-  }
-
-  function alertsByErrorCode(status) {
-    const messagesByErrorCode = {
-      400: 'アプリケーションのエラーが起きています。管理者へお問い合わせください。',
-      401: 'アクセス権限がありません。ログインしてください。',
-      403: 'アプリケーションのエラーが起きています。管理者へお問い合わせください。',
-      404: 'アプリケーションのエラーが起きています。管理者へお問い合わせください。',
-      429: 'リクエストが多いため利用制限されています。時間をおいて再度お試しください。',
-      500: 'Spotifyのサーバーで障害が起きています。復旧までお待ちください。',
-      502: 'Spotifyのサーバーで障害が起きています。復旧までお待ちください。',
-      503: 'Spotifyのサーバーで一時的な障害が起きています。時間をおいて再度お試しください。',
-    };
-    return messagesByErrorCode[status];
-  }
-
-  const closeModal = () => {
-    setFlag(false);
-  };
+  const closeModal = useCallback(() => setFlag(false), []);
 
   return (
     <div className={styles.container}>
@@ -231,27 +146,27 @@ export default function tracks() {
         <section className={contentStyles.sec_contents}>
           <div className={contentStyles.time_range_selector}>
             <button
-              className={`${buttonStyles.button} ${buttonStyles.blue}`}
+              className={contentStyles.timeRange}
               onClick={() => getTrackByTerm('short_term')}>
               Last month
             </button>
             <button
-              className={`${buttonStyles.button} ${buttonStyles.blue}`}
+              className={contentStyles.timeRange}
               onClick={() => getTrackByTerm('medium_term')}>
               Last 6 month
             </button>
             <button
-              className={`${buttonStyles.button} ${buttonStyles.blue}`}
+              className={contentStyles.timeRange}
               onClick={() => getTrackByTerm('long_term')}>
               All time
             </button>
           </div>
-          
+
           <ul>{displayTracks}</ul>
           <div className={contentStyles.create_playlists}>
             <div className={contentStyles.create_playlists_inner}>
               <button
-                className={`${buttonStyles.button} ${buttonStyles.dark}`}
+                className={`${buttonStyles.button} ${buttonStyles.playlist}`}
                 onClick={createPlaylistHandler}>
                 Create Playlist
               </button>
